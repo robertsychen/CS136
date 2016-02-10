@@ -1,10 +1,6 @@
 #!/usr/bin/python
 
-# This is a dummy peer that just illustrates the available information your peers 
-# have available.
-
-# You'll want to copy this file to AgentNameXXX.py for various versions of XXX,
-# probably get rid of the silly logging messages, and then add more logic.
+# This is the reference client. It's based on the BitTorrent protocol.
 
 import random
 import logging
@@ -12,13 +8,15 @@ import logging
 from messages import Upload, Request
 from util import even_split
 from peer import Peer
+from collections import Counter
+import itertools
 
 class FwrkStd(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
         self.dummy_state = dict()
         self.dummy_state["cake"] = "lie"
-    
+
     def requests(self, peers, history):
         """
         peers: available info about the peers (who has what pieces)
@@ -40,6 +38,12 @@ class FwrkStd(Peer):
         for p in peers:
             logging.debug("id: %s, available pieces: %s" % (p.id, p.available_pieces))
 
+        all_available_pieces = list(itertools.chain(*[p.available_pieces for p in peers]))
+        pieces_by_frequency = Counter(all_available_pieces).most_common()
+        rarest_piece = pieces_by_frequency[-1][1]
+
+        logging.debug("Here are the most frequent pieces: " + str(pieces_by_frequency))
+
         logging.debug("And look, I have my entire history available too:")
         logging.debug("look at the AgentHistory class in history.py for details")
         logging.debug(str(history))
@@ -47,8 +51,8 @@ class FwrkStd(Peer):
         requests = []   # We'll put all the things we want here
         # Symmetry breaking is good...
         random.shuffle(needed_pieces)
-        
-        # Sort peers by id.  This is probably not a useful sort, but other 
+
+        # Sort peers by id.  This is probably not a useful sort, but other
         # sorts might be useful
         peers.sort(key=lambda p: p.id)
         # request all available pieces from all peers!
@@ -106,5 +110,5 @@ class FwrkStd(Peer):
         # create actual uploads out of the list of peer ids and bandwidths
         uploads = [Upload(self.id, peer_id, bw)
                    for (peer_id, bw) in zip(chosen, bws)]
-            
+
         return uploads
