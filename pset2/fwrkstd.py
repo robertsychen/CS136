@@ -142,18 +142,46 @@ class FwrkStd(Peer):
         else:
             logging.debug("Still here: uploading to my favorite peers")
             # change my internal state for no reason
-            # No! Bad! Keep the cakke!
+            # No! Bad! Keep the cake!
             # self.dummy_state["cake"] = "pie"
 
             # **Reciprocal unlocking**
             # let's assume that we only want to give to our
             # mostest bestest friends, even if they don't request from us
             # It promotes charity :)
+
+            # Let's also do some handling to randomize if we have multiple best friends
+            # of same bestiness
+            # most of this is just ugly handling of cases where we don't have enough friends
             chosen = []
-            for i in xrange(3):
+            # handle bestest friends either being clear best or also tied
+            if len(best_friends) > 2:
+                candidate_best_friends = [best_friends[2]]
+                best_friend_counter = 3
+                # handle best friends tied for bestinees
+                while(best_friend_counter < len(best_friends) and best_friends[best_friend_counter][1] == best_friends[2][1]):
+                    candidate_best_friends.append(best_friends[best_friend_counter][0])
+                    best_friend_counter += 1
+                if best_friends[0][1] > best_friends[2][1]:
+                    chosen.append(best_friends[0][0])
+                else:
+                    candidate_best_friends.append(best_friends[0][0])
+                if best_friends[1][1] > best_friends[2][1]:
+                    chosen.append(best_friends[1][0])
+                else:
+                    candidate_best_friends.append(best_friends[1][0])
+            else:
+                candidate_best_friends = []
+                if len(best_friends) > 1:
+                    chosen.append(best_friends[1][0])
+                if len(best_friends) > 0:
+                    chosen.append(best_friends[0][0])
+            # finally, we can actually randomize
+            random.shuffle(candidate_best_friends)
+            for i in xrange(3 - len(chosen)):
                 # let's assume we're okay leaving best friend slots empty
-                if i < len(best_friends):
-                    chosen.append(best_friends[i][0])
+                if i < len(candidate_best_friends):
+                    chosen.append(candidate_best_friends[i])
 
             # **Optimistic unlocking**
             # Again, let's assume that our optimistic doesn't necessarily
