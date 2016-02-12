@@ -56,3 +56,11 @@ those specified in Chapter 5.
   * The reference client might not immediately download from its current "friend," since it wants to find the rarest pieces
     first. Thus, while cooperation in general is still encouraged, the client might lose its favored status by
     reaching for rare pieces first.
+
+3. Explain two reasons why just having a BitTorrent client that is a best response to itself
+  is insufficient for this client to form an equilibrium in a peer-to-peer system.
+
+  * There might be other clients! Such other cllents could easily bend the system such that the remaining BT reference
+    clients aren't in equilibrium.
+  * The exchange and cooperation rate may be very slow, such that it takes a long time (or even too long)
+    to form an equilibrium.
