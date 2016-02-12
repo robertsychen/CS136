@@ -136,7 +136,7 @@ class FwrkPropShare(Peer):
             total_given = float(sum(one_round_ago[i] for i in valid_peers))
 
             chosen = list(valid_peers)
-            bws = [((one_round_ago[i] / total_given) * 0.9 * self.up_bw) for i in chosen]
+            bws = [int((one_round_ago[i] / total_given) * 0.9 * self.up_bw) for i in chosen]
             optimistic = random.choice(requester_ids)
             # make sure we're not optimistically picking someone who already deserves it
             # but do give up if everyone already happens deserves it
@@ -144,7 +144,7 @@ class FwrkPropShare(Peer):
                 optimistic = random.choice(requester_ids)
             if optimistic not in chosen:
                 chosen.append(optimistic)
-                bws.append(0.1 * self.up_bw)
+                bws.append(int(0.1 * self.up_bw))
             logging.debug("Here's who I've ultimately chosen: %s", chosen)
             logging.debug("And here's how much I've allotted to each: %s", bws)
 
