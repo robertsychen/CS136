@@ -15,7 +15,7 @@ class FwrkStd(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
         self.dummy_state = dict()
-        self.dummy_state["cake"] = "lie"
+        self.dummy_state["cake"] = "rainbows and sparkles :)"
 
     def requests(self, peers, history):
         """
@@ -30,7 +30,6 @@ class FwrkStd(Peer):
         needed_pieces = filter(needed, range(len(self.pieces)))
         np_set = set(needed_pieces)  # sets support fast intersection ops.
 
-
         logging.debug("%s here: still need pieces %s" % (
             self.id, needed_pieces))
 
@@ -38,15 +37,17 @@ class FwrkStd(Peer):
         for p in peers:
             logging.debug("id: %s, available pieces: %s" % (p.id, p.available_pieces))
 
+        # combine all pieces, and flatten the list
+
+        # a simple assumption: when we say 'rarest pieces'
+        # we mean only those among everyone else!
+        # (this is a fine assumption, so we won't request
+        # own pieces anyway)
         all_available_pieces = list(itertools.chain(*[p.available_pieces for p in peers]))
+        # now order by frequency
         pieces_by_frequency = Counter(all_available_pieces).most_common()
-        rarest_piece = pieces_by_frequency[-1][1]
 
         logging.debug("Here are the most frequent pieces: " + str(pieces_by_frequency))
-
-        logging.debug("And look, I have my entire history available too:")
-        logging.debug("look at the AgentHistory class in history.py for details")
-        logging.debug(str(history))
 
         requests = []   # We'll put all the things we want here
         # Symmetry breaking is good...
@@ -61,16 +62,23 @@ class FwrkStd(Peer):
             av_set = set(peer.available_pieces)
             isect = av_set.intersection(np_set)
             n = min(self.max_requests, len(isect))
-            # More symmetry breaking -- ask for random pieces.
-            # This would be the place to try fancier piece-requesting strategies
-            # to avoid getting the same thing from multiple peers at a time.
-            for piece_id in random.sample(isect, n):
-                # aha! The peer has this piece! Request it.
-                # which part of the piece do we need next?
-                # (must get the next-needed blocks in order)
-                start_block = self.pieces[piece_id]
-                r = Request(self.id, peer.id, piece_id, start_block)
-                requests.append(r)
+            # **Implement rarest pieces first**
+            # A simple assumption we can make is to ask for as many
+            # as possible from each peer, as in the dummy, but
+            # ordering by rarest-first instead of randomly
+            num_requested = 0
+            curr_rare_piece = 1
+            while num_requested < n and curr_rare_piece <= len(pieces_by_frequency):
+                rare_id = pieces_by_frequency[-1*curr_rare_piece][0]
+                if rare_id in isect:
+                    num_requested += 1
+                    # aha! The peer has this piece! Request it.
+                    # which part of the piece do we need next?
+                    # (must get the next-needed blocks in order)
+                    start_block = self.pieces[rare_id]
+                    r = Request(self.id, peer.id, rare_id, start_block)
+                    requests.append(r)
+                curr_rare_piece += 1
 
         return requests
 
