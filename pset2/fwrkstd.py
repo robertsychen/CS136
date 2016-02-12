@@ -16,6 +16,14 @@ class FwrkStd(Peer):
         print "post_init(): %s here!" % self.id
         self.dummy_state = dict()
         self.dummy_state["cake"] = "rainbows and sparkles :)"
+        # reciprocal unlocking
+        # for easy tracking of one/two round download histories
+        self.one_round_ago = dict()
+        self.two_round_ago = dict()
+        # optimistic unlocking
+        # we'll update this automatically in round 0,
+        # so let's set it to -1 for now
+        self.optimistic = -1
 
     def requests(self, peers, history):
         """
@@ -36,6 +44,10 @@ class FwrkStd(Peer):
         logging.debug("%s still here. Here are some peers:" % self.id)
         for p in peers:
             logging.debug("id: %s, available pieces: %s" % (p.id, p.available_pieces))
+
+        logging.debug("And look, I have my entire history available too:")
+        logging.debug("look at the AgentHistory class in history.py for details")
+        logging.debug(str(history))
 
         # combine all pieces, and flatten the list
 
@@ -101,18 +113,63 @@ class FwrkStd(Peer):
         # has a list of Download objects for each Download to this peer in
         # the previous round.
 
+        # take care of updating the trackers for your friendliest peers
+        self.two_round_ago = self.one_round_ago.copy()
+        self.one_round_ago = dict()
+        if round != 0:
+            for d in history.downloads[round-1]:
+                # let's assume that we can just add blocks split among pieces
+                # rather than average among pieces
+                if d.from_id in self.one_round_ago.keys():
+                    self.one_round_ago[d.from_id] += d.blocks
+                else:
+                    self.one_round_ago[d.from_id] = d.blocks
+
+        logging.debug("Here are my peer histories from two round ago: %s" % self.two_round_ago)
+        logging.debug("and from one round ago: %s" % self.one_round_ago)
+
+        # and now add up the last two rounds
+        c = Counter(self.two_round_ago)
+        c.update(self.one_round_ago)
+        best_friends = c.most_common()
+
+        logging.debug("and my best friends!: %s" % best_friends)
+
         if len(requests) == 0:
             logging.debug("No one wants my pieces!")
             chosen = []
             bws = []
         else:
-            logging.debug("Still here: uploading to a random peer")
+            logging.debug("Still here: uploading to my favorite peers")
             # change my internal state for no reason
-            self.dummy_state["cake"] = "pie"
+            # No! Bad! Keep the cakke!
+            # self.dummy_state["cake"] = "pie"
 
-            request = random.choice(requests)
-            chosen = [request.requester_id]
-            # Evenly "split" my upload bandwidth among the one chosen requester
+            # **Reciprocal unlocking**
+            # let's assume that we only want to give to our
+            # mostest bestest friends, even if they don't request from us
+            # It promotes charity :)
+            chosen = []
+            for i in xrange(3):
+                # let's assume we're okay leaving best friend slots empty
+                if i < len(best_friends):
+                    chosen.append(best_friends[i][0])
+
+            # **Optimistic unlocking**
+            # Again, let's assume that our optimistic doesn't necessarily
+            # have to be in the requests
+            # Let's also assume that we won't give to the optimistic
+            # if they're already in our best friends--we can wait until they're not,
+            # or a new optimistic is set
+            if round % 3 == 0:
+                self.optimistic = random.choice(peers).id
+            if self.optimistic not in chosen:
+                chosen.append(self.optimistic)
+
+            logging.debug("And here are my chosen peers: %s", chosen)
+            # request = random.choice(requests)
+            # chosen = [request.requester_id]
+            # Evenly "split" my upload bandwidth among the chosen requesters
             bws = even_split(self.up_bw, len(chosen))
 
         # create actual uploads out of the list of peer ids and bandwidths
