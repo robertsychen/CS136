@@ -10,13 +10,12 @@ from __future__ import division
 import random
 import logging
 from messages import Upload, Request
-from util import even_split
 from peer import Peer
 from collections import Counter
 import itertools
 
 
-class FwrkTyrant(Peer):
+class A000Tyrant(Peer):
     num_download_rate_average_rounds = 2
     alpha = 1.2
     gamma = 0.9

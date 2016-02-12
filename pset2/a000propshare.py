@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
-# This is the reference client. It's based on the BitTorrent protocol.
+# This is a dummy peer that just illustrates the available information your peers
+# have available.
+
+# You'll want to copy this file to AgentNameXXX.py for various versions of XXX,
+# probably get rid of the silly logging messages, and then add more logic.
 
 import random
 import logging
@@ -11,19 +15,11 @@ from peer import Peer
 from collections import Counter
 import itertools
 
-class FwrkStd(Peer):
+class A000PropShare(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
         self.dummy_state = dict()
-        self.dummy_state["cake"] = "rainbows and sparkles :)"
-        # reciprocal unlocking
-        # for easy tracking of one/two round download histories
-        self.one_round_ago = dict()
-        self.two_round_ago = dict()
-        # optimistic unlocking
-        # we'll update this automatically in round 0,
-        # so let's set it to -1 for now
-        self.optimistic = -1
+        self.dummy_state["cake"] = "lie"
 
     def requests(self, peers, history):
         """
@@ -113,92 +109,49 @@ class FwrkStd(Peer):
         # has a list of Download objects for each Download to this peer in
         # the previous round.
 
-        # take care of updating the trackers for your friendliest peers
-        self.two_round_ago = self.one_round_ago.copy()
-        self.one_round_ago = dict()
-        if round != 0:
-            for d in history.downloads[round-1]:
-                # let's assume that we can just add blocks split among pieces
-                # rather than average among pieces
-                if d.from_id in self.one_round_ago.keys():
-                    self.one_round_ago[d.from_id] += d.blocks
-                else:
-                    self.one_round_ago[d.from_id] = d.blocks
-
-        logging.debug("Here are my peer histories from two round ago: %s" % self.two_round_ago)
-        logging.debug("and from one round ago: %s" % self.one_round_ago)
-
-        # and now add up the last two rounds
-        c = Counter(self.two_round_ago)
-        c.update(self.one_round_ago)
-        best_friends = c.most_common()
-
-        logging.debug("and my best friends!: %s" % best_friends)
-
         if len(requests) == 0:
             logging.debug("No one wants my pieces!")
             chosen = []
             bws = []
         else:
-            logging.debug("Still here: uploading to my favorite peers")
+            # logging.debug("Still here: uploading to a random peer")
             # change my internal state for no reason
-            # No! Bad! Keep the cake!
+            # NO! Keep the cake!!! >:(
             # self.dummy_state["cake"] = "pie"
 
-            # **Reciprocal unlocking**
-            # let's assume that we only want to give to our
-            # mostest bestest friends, even if they don't request from us
-            # It promotes charity :)
+            one_round_ago = dict()
+            if round != 0:
+                for d in history.downloads[round-1]:
+                    # let's assume that we can just add blocks split among pieces
+                    # rather than average among pieces
+                    if d.from_id in one_round_ago.keys():
+                        one_round_ago[d.from_id] += d.blocks
+                    else:
+                        one_round_ago[d.from_id] = d.blocks
+            requester_ids = [r.requester_id for r in requests]
+            logging.debug("Here are the people who gave to me last round: %s", one_round_ago.keys())
+            logging.debug("Here are the people who requested from me this round: %s", requester_ids)
+            valid_peers = set(one_round_ago.keys()).intersection(set(requester_ids))
+            logging.debug("And here are the people who're in both!: %s", valid_peers)
+            total_given = float(sum(one_round_ago[i] for i in valid_peers))
 
-            # Let's also do some handling to randomize if we have multiple best friends
-            # of same bestiness
-            # most of this is just ugly handling of cases where we don't have enough friends
-            chosen = []
-            # handle bestest friends either being clear best or also tied
-            if len(best_friends) > 2:
-                candidate_best_friends = [best_friends[2]]
-                best_friend_counter = 3
-                # handle best friends tied for bestinees
-                while(best_friend_counter < len(best_friends) and best_friends[best_friend_counter][1] == best_friends[2][1]):
-                    candidate_best_friends.append(best_friends[best_friend_counter][0])
-                    best_friend_counter += 1
-                if best_friends[0][1] > best_friends[2][1]:
-                    chosen.append(best_friends[0][0])
-                else:
-                    candidate_best_friends.append(best_friends[0][0])
-                if best_friends[1][1] > best_friends[2][1]:
-                    chosen.append(best_friends[1][0])
-                else:
-                    candidate_best_friends.append(best_friends[1][0])
-            else:
-                candidate_best_friends = []
-                if len(best_friends) > 1:
-                    chosen.append(best_friends[1][0])
-                if len(best_friends) > 0:
-                    chosen.append(best_friends[0][0])
-            # finally, we can actually randomize
-            random.shuffle(candidate_best_friends)
-            for i in xrange(3 - len(chosen)):
-                # let's assume we're okay leaving best friend slots empty
-                if i < len(candidate_best_friends):
-                    chosen.append(candidate_best_friends[i])
+            chosen = list(valid_peers)
+            bws = [int((one_round_ago[i] / total_given) * 0.9 * self.up_bw) for i in chosen]
+            optimistic = random.choice(requester_ids)
+            # make sure we're not optimistically picking someone who already deserves it
+            # but do give up if everyone already happens deserves it
+            while optimistic in chosen and set(chosen) != set(requester_ids):
+                optimistic = random.choice(requester_ids)
+            if optimistic not in chosen:
+                chosen.append(optimistic)
+                bws.append(int(0.1 * self.up_bw))
+            logging.debug("Here's who I've ultimately chosen: %s", chosen)
+            logging.debug("And here's how much I've allotted to each: %s", bws)
 
-            # **Optimistic unlocking**
-            # Again, let's assume that our optimistic doesn't necessarily
-            # have to be in the requests
-            # Let's also assume that we won't give to the optimistic
-            # if they're already in our best friends--we can wait until they're not,
-            # or a new optimistic is set
-            if round % 3 == 0:
-                self.optimistic = random.choice(peers).id
-            if self.optimistic not in chosen:
-                chosen.append(self.optimistic)
-
-            logging.debug("And here are my chosen peers: %s", chosen)
             # request = random.choice(requests)
             # chosen = [request.requester_id]
-            # Evenly "split" my upload bandwidth among the chosen requesters
-            bws = even_split(self.up_bw, len(chosen))
+            # Evenly "split" my upload bandwidth among the one chosen requester
+            # bws = even_split(self.up_bw, len(chosen))
 
         # create actual uploads out of the list of peer ids and bandwidths
         uploads = [Upload(self.id, peer_id, bw)
