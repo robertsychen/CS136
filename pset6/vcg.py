@@ -57,7 +57,7 @@ class VCG:
             elif k == n - 1:
                 # Lowest allocated position pays maximum of the reserve price and the maximum bid of unallocated bidders.
                 num_slots = len(slot_clicks)
-                return c[k] * (r if len(valid_bids) <= num_slots else valid_bids[num_slots][1])
+                return c[k] * (reserve if len(valid_bids) <= num_slots else valid_bids[num_slots][1])
             else:
                 # Compute VCG price recursively.
                 return (c[k] - c[k + 1]) * just_bids[k + 1] + total_payment(k + 1)
