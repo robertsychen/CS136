@@ -54,7 +54,7 @@ class Fwrkbb:
         value = self.value
 
         def util(i):
-            pos_effect = math.pow(0.75, 0)
+            pos_effect = math.pow(0.75, i)
             init_util = value - slot_info_copy[i][1]
             return pos_effect * init_util
 
