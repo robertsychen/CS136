@@ -35,7 +35,7 @@ class BBAgent:
             if max == None:
                 max = 2 * min
             return (s, min, max)
-            
+
         info = map(compute, range(len(clicks)))
 #        sys.stdout.write("slot info: %s\n" % info)
         return info
@@ -49,10 +49,16 @@ class BBAgent:
 
         returns a list of utilities per slot.
         """
-        # TODO: Fill this in
-        utilities = []   # Change this
+        slot_info_copy = self.slot_info(t, history, reserve)
+        value = self.value
 
-        
+        def util(i):
+            pos_effect = math.pow(0.75, 0)
+            init_util = value - slot_info_copy[i][1]
+            return pos_effect * init_util
+
+        utilities = [util(i) for i in range(len(slot_info_copy))]
+
         return utilities
 
     def target_slot(self, t, history, reserve):
@@ -81,13 +87,14 @@ class BBAgent:
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
 
-        # TODO: Fill this in.
-        bid = 0  # change this
-        
+        bid = 0
+        if min_bid >= self.value or slot == 0:
+            bid = self.value
+        else:
+            bid = self.value - (math.pow(0.75, slot) * (self.value - min_bid) / math.pow(0.75, slot - 1))
+
         return bid
 
     def __repr__(self):
         return "%s(id=%d, value=%d)" % (
             self.__class__.__name__, self.id, self.value)
-
-
