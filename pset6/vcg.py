@@ -27,7 +27,7 @@ class VCG:
         """
 
         # The allocation is the same as GSP, so we filled that in for you...
-        
+
         valid = lambda (a, bid): bid >= reserve
         valid_bids = filter(valid, bids)
 
@@ -41,10 +41,9 @@ class VCG:
         allocated_bids = valid_bids[:num_slots]
         if len(allocated_bids) == 0:
             return ([], [])
-        
+
         (allocation, just_bids) = zip(*allocated_bids)
 
-        # TODO: You just have to implement this function
         def total_payment(k):
             """
             Total payment for a bidder in slot k.
@@ -52,7 +51,16 @@ class VCG:
             c = slot_clicks
             n = len(allocation)
 
-            # TODO: Compute the payment and return it.
+            if k >= n:
+                # Unallocated bidders do not pay anything.
+                return 0
+            elif k == n - 1:
+                # Lowest allocated position pays maximum of the reserve price and the maximum bid of unallocated bidders.
+                num_slots = len(slot_clicks)
+                return c[k] * (reserve if len(valid_bids) <= num_slots else valid_bids[num_slots][1])
+            else:
+                # Compute VCG price recursively.
+                return (c[k] - c[k + 1]) * just_bids[k + 1] + total_payment(k + 1)
 
         def norm(totals):
             """Normalize total payments by the clicks in each slot"""
@@ -60,7 +68,7 @@ class VCG:
 
         per_click_payments = norm(
             [total_payment(k) for k in range(len(allocation))])
-        
+
         return (list(allocation), per_click_payments)
 
     @staticmethod

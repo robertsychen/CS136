@@ -6,7 +6,6 @@ import math
 from gsp import GSP
 from util import argmax_index
 
-
 class Fwrkbb:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
@@ -37,9 +36,9 @@ class Fwrkbb:
             if max == None:
                 max = 2 * min
             return (s, min, max)
-
         info = map(compute, range(len(clicks)))
         # sys.stdout.write("slot info: %s\n" % info)
+
         return info
 
 
