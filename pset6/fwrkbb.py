@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 import sys
+import math
 
 from gsp import GSP
 from util import argmax_index
 
-class BBAgent:
+
+class Fwrkbb:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
         self.id = id
@@ -37,7 +39,7 @@ class BBAgent:
             return (s, min, max)
 
         info = map(compute, range(len(clicks)))
-#        sys.stdout.write("slot info: %s\n" % info)
+        # sys.stdout.write("slot info: %s\n" % info)
         return info
 
 
@@ -71,6 +73,7 @@ class BBAgent:
         """
         i =  argmax_index(self.expected_utils(t, history, reserve))
         info = self.slot_info(t, history, reserve)
+
         return info[i]
 
     def bid(self, t, history, reserve):
