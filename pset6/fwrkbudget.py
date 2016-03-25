@@ -9,17 +9,13 @@ from util import argmax_index
 class Fwrkbudget:
     """Budget-aware agent"""
 
-    epsilon = 0.1
-
     def __init__(self, id, value, budget):
         self.id = id
         self.value = value
         self.budget = budget
-        self.total_spent = 0
 
     def initial_bid(self, reserve):
-        bid = self.value / 2
-        self.total_spent += bid
+        bid = self.value / 3
         return bid
 
     def slot_info(self, t, history, reserve):
@@ -68,13 +64,7 @@ class Fwrkbudget:
 
         return utilities
 
-    def bid_threshold(self):
-        U = self.value + 1
-        z = self.total_spent / self.budget
-        phi = math.pow((U * math.e / self.epsilon), z) * (self.epsilon / math.e)
-        return self.value / (1 + phi)
-
-    def target_slot(self, t, history, reserve, threshold):
+    def target_slot(self, t, history, reserve):
         """Figure out the best slot to target, assuming that everyone else
         keeps their bids constant from the previous rounds.
 
@@ -82,18 +72,6 @@ class Fwrkbudget:
         the other-agent bid for that slot in the last round.  If slot_id = 0,
         max_bid is min_bid * 2
         """
-
-        # slots = self.expected_utils(t, history, reserve)
-        # slots = filter(lambda (slot, utility, min_bid): min_bid <= threshold, slots)
-        #
-        # if slots:
-        #     i = max(slots, key=lambda (a, b, c): b)[0]
-        # else:
-        #     i = None
-        #
-        # info = self.slot_info(t, history, reserve)
-        #
-        # return info[i] if i is not None else None
 
         # print self.expected_utils(t, history, reserve)
         # i =  argmax_index(self.expected_utils(t, history, reserve))
@@ -104,33 +82,20 @@ class Fwrkbudget:
         return info[i]
 
     def bid(self, t, history, reserve):
-        # The Balanced bidding strategy (BB) is the strategy for a player j that, given
-        # bids b_{-j},
-        # - targets the slot s*_j which maximizes his utility, that is,
-        # s*_j = argmax_s {clicks_s (v_j - t_s(j))}.
-        # - chooses his bid b' for the next round so as to
-        # satisfy the following equation:
-        # clicks_{s*_j} (v_j - t_{s*_j}(j)) = clicks_{s*_j-1}(v_j - b')
-        # (p_x is the price/click in slot x)
-        # If s*_j is the top slot, bid the value v_j
+        # Applies balanced bidding strategy, but
+        # always goes for the last slot
 
-        prev_round = history.round(t-1)
-        threshold = self.bid_threshold()
-        target_slot = self.target_slot(t, history, reserve, threshold)
+        target_slot = self.target_slot(t, history, reserve)
 
         bid = 0
         (slot, min_bid, max_bid) = target_slot
-        if min_bid >= self.value or slot == 0:
+        if min_bid >= self.value or slot <= 0:
             bid = self.value
         else:
             bid = self.value - 0.75 * (self.value - min_bid)
 
         cos_cycle = (math.cos(math.pi * t / 24))
-        # periodic_weight = (cos_cycle + 1) / 2
-        bid = bid + cos_cycle
-        # bid = min(reserve, self.value)
-
-        self.total_spent += bid
+        bid = bid - cos_cycle
 
         return bid
 
