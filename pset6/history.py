@@ -11,16 +11,16 @@ class History:
         def __init__(self, bids, occupants, clicks,
                      per_click_payments, slot_payments):
             """Takes the info for a _single_ round."""
-            self.bids = copy.deepcopy(bids)
-            self.occupants = copy.deepcopy(occupants)
-            self.clicks = copy.deepcopy(clicks)
-            self.per_click_payments = copy.deepcopy(per_click_payments)
-            self.slot_payments = copy.deepcopy(slot_payments)
-            # self.bids = bids
-            # self.occupants = occupants
-            # self.clicks = clicks
-            # self.per_click_payments = per_click_payments
-            # self.slot_payments = slot_payments
+            # self.bids = copy.deepcopy(bids)
+            # self.occupants = copy.deepcopy(occupants)
+            # self.clicks = copy.deepcopy(clicks)
+            # self.per_click_payments = copy.deepcopy(per_click_payments)
+            # self.slot_payments = copy.deepcopy(slot_payments)
+            self.bids = bids
+            self.occupants = occupants
+            self.clicks = clicks
+            self.per_click_payments = per_click_payments
+            self.slot_payments = slot_payments
 
     def __init__(self, bids, occupants, clicks,
                  per_click_payments, slot_payments, n_agents=3):

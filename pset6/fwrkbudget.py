@@ -95,7 +95,10 @@ class Fwrkbudget:
         #
         # return info[i] if i is not None else None
 
-        i =  argmax_index(self.expected_utils(t, history, reserve))
+        # print self.expected_utils(t, history, reserve)
+        # i =  argmax_index(self.expected_utils(t, history, reserve))
+        # i = len(self.expected_utils(t, history, reserve)) - 1
+        i = len(history.round(t - 1).clicks) - 1
         info = self.slot_info(t, history, reserve)
 
         return info[i]
@@ -116,19 +119,16 @@ class Fwrkbudget:
         target_slot = self.target_slot(t, history, reserve, threshold)
 
         bid = 0
-        if target_slot is None:
-            bid = 1
+        (slot, min_bid, max_bid) = target_slot
+        if min_bid >= self.value or slot == 0:
+            bid = self.value
         else:
-            (slot, min_bid, max_bid) = target_slot
-            if min_bid >= self.value or slot == 0:
-                bid = self.value
-            else:
-                # bid = min_bid
-                bid = self.value - 0.75 * (self.value - min_bid)
+            bid = self.value - 0.75 * (self.value - min_bid)
 
         cos_cycle = (math.cos(math.pi * t / 24))
         # periodic_weight = (cos_cycle + 1) / 2
-        bid = bid - cos_cycle
+        bid = bid + cos_cycle
+        # bid = min(reserve, self.value)
 
         self.total_spent += bid
 
