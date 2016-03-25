@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import sys
+import math
 
 from gsp import GSP
 from util import argmax_index
 
-class BBAgent:
+class Fwrkbudget:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
         self.id = id
@@ -13,7 +14,7 @@ class BBAgent:
         self.budget = budget
 
     def initial_bid(self, reserve):
-        return self.value / 2
+        return 0 #self.value / 2
 
 
     def slot_info(self, t, history, reserve):
@@ -35,9 +36,9 @@ class BBAgent:
             if max == None:
                 max = 2 * min
             return (s, min, max)
-            
         info = map(compute, range(len(clicks)))
-#        sys.stdout.write("slot info: %s\n" % info)
+        # sys.stdout.write("slot info: %s\n" % info)
+
         return info
 
 
@@ -49,10 +50,16 @@ class BBAgent:
 
         returns a list of utilities per slot.
         """
-        # TODO: Fill this in
-        utilities = []   # Change this
+        slot_info_copy = self.slot_info(t, history, reserve)
+        value = self.value
 
-        
+        def util(i):
+            pos_effect = math.pow(0.75, i)
+            init_util = value - slot_info_copy[i][1]
+            return pos_effect * init_util
+
+        utilities = [util(i) for i in range(len(slot_info_copy))]
+
         return utilities
 
     def target_slot(self, t, history, reserve):
@@ -65,29 +72,37 @@ class BBAgent:
         """
         i =  argmax_index(self.expected_utils(t, history, reserve))
         info = self.slot_info(t, history, reserve)
+
         return info[i]
 
     def bid(self, t, history, reserve):
-        # The Balanced bidding strategy (BB) is the strategy for a player j that, given
-        # bids b_{-j},
-        # - targets the slot s*_j which maximizes his utility, that is,
-        # s*_j = argmax_s {clicks_s (v_j - t_s(j))}.
-        # - chooses his bid b' for the next round so as to
-        # satisfy the following equation:
-        # clicks_{s*_j} (v_j - t_{s*_j}(j)) = clicks_{s*_j-1}(v_j - b')
-        # (p_x is the price/click in slot x)
-        # If s*_j is the top slot, bid the value v_j
+
+        # print "Occupants of round %d are: " % (t - 1)
+        # print history.round(t-1).occupants
+
+        # balanced bidder with periodic weight
+
+        periodic_weight = (30 + math.cos(math.pi * t / 24) + 50) / 80
+        budget_cap = self.budget / 48
 
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
 
-        # TODO: Fill this in.
-        bid = 0  # change this
-        
+        bid = 0
+        if min_bid >= self.value or slot == 0:
+            bid = self.value
+        else:
+            # bid = self.value - (math.pow(0.75, slot) * (self.value - max_bid) / math.pow(0.75, slot - 1))
+            bid = self.value - 0.75 * (self.value - min_bid)
+
+        periodic_weight = (math.cos(math.pi * t / 24))
+        bid = bid
+
+        # print history.round(t-1).bids
+        # print "bid %f for slot %d in round %d" % (bid, slot, t)
+
         return bid
 
     def __repr__(self):
         return "%s(id=%d, value=%d)" % (
             self.__class__.__name__, self.id, self.value)
-
-
