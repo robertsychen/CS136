@@ -1,19 +1,26 @@
 #!/usr/bin/env python
 
 import sys
+import math
 
 from gsp import GSP
 from util import argmax_index
 
-class BBAgent:
-    """Balanced bidding agent"""
+class Fwrkbudget:
+    """Budget-aware agent"""
+    
+    epsilon = 1.75
+    
     def __init__(self, id, value, budget):
         self.id = id
         self.value = value
         self.budget = budget
+        self.total_spent = 0
 
     def initial_bid(self, reserve):
-        return self.value / 2
+        bid = self.value / 2
+        self.total_spent += bid
+        return bid
 
 
     def slot_info(self, t, history, reserve):
@@ -35,9 +42,9 @@ class BBAgent:
             if max == None:
                 max = 2 * min
             return (s, min, max)
-            
         info = map(compute, range(len(clicks)))
-#        sys.stdout.write("slot info: %s\n" % info)
+        # sys.stdout.write("slot info: %s\n" % info)
+
         return info
 
 
@@ -49,13 +56,26 @@ class BBAgent:
 
         returns a list of utilities per slot.
         """
-        # TODO: Fill this in
-        utilities = []   # Change this
+        slot_info_copy = self.slot_info(t, history, reserve)
+        value = self.value
 
-        
+        def util((slot, min_bid, max_bid)):
+            pos_effect = math.pow(0.75, slot)
+            init_util = value - min_bid
+            utility = pos_effect * init_util
+            return (slot, utility, min_bid)
+
+        utilities = map(util, slot_info_copy)
+
         return utilities
+        
+    def bid_threshold(self):
+        U = self.value + 1
+        z = self.total_spent / self.budget
+        phi = math.pow((U * math.e / self.epsilon), z) * (self.epsilon / math.e)
+        return self.value / (1 + phi)
 
-    def target_slot(self, t, history, reserve):
+    def target_slot(self, t, history, reserve, threshold):
         """Figure out the best slot to target, assuming that everyone else
         keeps their bids constant from the previous rounds.
 
@@ -63,9 +83,18 @@ class BBAgent:
         the other-agent bid for that slot in the last round.  If slot_id = 0,
         max_bid is min_bid * 2
         """
-        i =  argmax_index(self.expected_utils(t, history, reserve))
+        
+        slots = self.expected_utils(t, history, reserve)
+        slots = filter(lambda (slot, utility, min_bid): min_bid <= threshold, slots)
+        
+        if slots:
+            i = max(slots, key=lambda (a, b, c): b)[0]
+        else:
+            i = None
+        
         info = self.slot_info(t, history, reserve)
-        return info[i]
+
+        return info[i] if i is not None else None
 
     def bid(self, t, history, reserve):
         # The Balanced bidding strategy (BB) is the strategy for a player j that, given
@@ -79,15 +108,23 @@ class BBAgent:
         # If s*_j is the top slot, bid the value v_j
 
         prev_round = history.round(t-1)
-        (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
+        threshold = self.bid_threshold()
+        target_slot = self.target_slot(t, history, reserve, threshold)
 
-        # TODO: Fill this in.
-        bid = 0  # change this
+        bid = 0
+        if target_slot is None:
+            bid = 1
+        else:
+            (slot, min_bid, max_bid) = target_slot
+            if slot == 0:
+                bid = self.value
+            else:
+                bid = min_bid
+                
+        self.total_spent += bid
         
         return bid
 
     def __repr__(self):
         return "%s(id=%d, value=%d)" % (
             self.__class__.__name__, self.id, self.value)
-
-
