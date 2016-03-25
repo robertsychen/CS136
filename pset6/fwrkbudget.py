@@ -8,9 +8,9 @@ from util import argmax_index
 
 class Fwrkbudget:
     """Budget-aware agent"""
-    
-    epsilon = 1.75
-    
+
+    epsilon = 0.1
+
     def __init__(self, id, value, budget):
         self.id = id
         self.value = value
@@ -68,7 +68,7 @@ class Fwrkbudget:
         utilities = map(util, slot_info_copy)
 
         return utilities
-        
+
     def bid_threshold(self):
         U = self.value + 1
         z = self.total_spent / self.budget
@@ -83,18 +83,23 @@ class Fwrkbudget:
         the other-agent bid for that slot in the last round.  If slot_id = 0,
         max_bid is min_bid * 2
         """
-        
-        slots = self.expected_utils(t, history, reserve)
-        slots = filter(lambda (slot, utility, min_bid): min_bid <= threshold, slots)
-        
-        if slots:
-            i = max(slots, key=lambda (a, b, c): b)[0]
-        else:
-            i = None
-        
+
+        # slots = self.expected_utils(t, history, reserve)
+        # slots = filter(lambda (slot, utility, min_bid): min_bid <= threshold, slots)
+        #
+        # if slots:
+        #     i = max(slots, key=lambda (a, b, c): b)[0]
+        # else:
+        #     i = None
+        #
+        # info = self.slot_info(t, history, reserve)
+        #
+        # return info[i] if i is not None else None
+
+        i =  argmax_index(self.expected_utils(t, history, reserve))
         info = self.slot_info(t, history, reserve)
 
-        return info[i] if i is not None else None
+        return info[i]
 
     def bid(self, t, history, reserve):
         # The Balanced bidding strategy (BB) is the strategy for a player j that, given
@@ -120,9 +125,9 @@ class Fwrkbudget:
                 bid = self.value
             else:
                 bid = min_bid
-                
+
         self.total_spent += bid
-        
+
         return bid
 
     def __repr__(self):
