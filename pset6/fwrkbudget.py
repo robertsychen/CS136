@@ -22,7 +22,6 @@ class Fwrkbudget:
         self.total_spent += bid
         return bid
 
-
     def slot_info(self, t, history, reserve):
         """Compute the following for each slot, assuming that everyone else
         keeps their bids constant from the previous rounds.
@@ -121,10 +120,15 @@ class Fwrkbudget:
             bid = 1
         else:
             (slot, min_bid, max_bid) = target_slot
-            if slot == 0:
+            if min_bid >= self.value or slot == 0:
                 bid = self.value
             else:
-                bid = min_bid
+                # bid = min_bid
+                bid = self.value - 0.75 * (self.value - min_bid)
+
+        cos_cycle = (math.cos(math.pi * t / 24))
+        # periodic_weight = (cos_cycle + 1) / 2
+        bid = bid - cos_cycle
 
         self.total_spent += bid
 
