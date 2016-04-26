@@ -1,10 +1,14 @@
 # here's a boilerplate algorithm for the iterated deferred acceptance
 
-# generate an array of users
-def gen_users(n):
+import user
+from user import User
 
-# calculate the sorted preferences for every user
-def calc_prefs(users):
 
 # return matches
-def run_da
+def run_da():
+    users = user.gen_users(10)
+    users = user.add_prefs(users)
+    for u in users:
+        print "id: %d, prefs: %s" % (u.id, u.prefs)
+
+run_da()
