@@ -25,18 +25,21 @@ class User(object):
             self.id, self.features, self.gender, self.seeking, self.prefs
         )
 
+    # euclidean distance on features vector
     def dist(self, u):
         d_squares = 0
         for i in range(User.num_features):
             d_squares += abs(pow(self.features[i], 2) - pow(u.features[i], 2))
         return math.sqrt(d_squares)
 
+    # is gender compatible with other user?
     def is_compatibile(self, u):
         return (u.gender == 0 and (self.seeking == 0 or self.seeking == 2) or
                 u.gender == 1 and (self.seeking == 1 or self.seeking == 2))
 
 
 # generate and return n random users
+# no preference ordering yet
 def gen_users(n):
     users = [None] * n
     for i in xrange(n):
@@ -47,6 +50,7 @@ def gen_users(n):
 
 
 # calculate, sort, and insert preferences on all users
+# returns the list of users again
 def add_prefs(users):
     for u1 in users:
         distances_and_ids = [(u2.id, u1.dist(u2))
