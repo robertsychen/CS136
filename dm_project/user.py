@@ -31,6 +31,10 @@ class User(object):
             d_squares += abs(pow(self.features[i], 2) - pow(u.features[i], 2))
         return math.sqrt(d_squares)
 
+    def is_compatibile(self, u):
+        return (u.gender == 0 and (self.seeking == 0 or self.seeking == 2) or
+                u.gender == 1 and (self.seeking == 1 or self.seeking == 2))
+
 
 # generate and return n random users
 def gen_users(n):
