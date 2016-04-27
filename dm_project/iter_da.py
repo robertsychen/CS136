@@ -21,9 +21,11 @@ def iter_da_on_group():
 # return matches on all users
 # just dummy code for now
 def run_iter_da_for_all():
-    users = user.gen_users(10)
+    # users = user.gen_users(10)
+    # users = user.add_prefs(users)
+    users = user.load_users('anon_data_2016.txt')
+    users = user.add_features_to_users(users, 'features_2016.txt')
     users = user.add_prefs(users)
-    for u in users:
-        print "id: %d, prefs: %s" % (u.id, u.prefs)
+    print "id: %d, prefs: %s" % (users[0].id, users[0].prefs[0:10])
 
 run_iter_da_for_all()
