@@ -54,9 +54,14 @@ def gen_users(n):
 # returns the list of users again
 def add_prefs(users, compatible_only=False):
     for u1 in users:
+        distances_and_ids = []
+        for u2 in users if u2.id != u1.id:
+            dist = u1.dist(u2) if (compatible_only and
+                                   u1.is_compatibile(u2)) else -1
+            distances_and_ids += (u2.id, dist)
         distances_and_ids = [(u2.id, u1.dist(u2))
                              for u2 in users if u2.id != u1.id]
-        distances_and_ids = sorted(distances_and_ids, key=itemgetter(1))
+        distances_and_ids.sort(key=itemgetter(1))
         # print distances_and_ids
         u1.prefs = [u[0] for u in distances_and_ids]
         print 'Loaded prefs for user %d: %s ....' % (u1.id, u1.prefs[0:5])
