@@ -24,8 +24,12 @@ def run_iter_da_for_all():
     # users = user.gen_users(10)
     # users = user.add_prefs(users)
     users = user.load_users('anon_data_2016.txt')
-    users = user.add_features_to_users(users, 'features_2016.txt')
-    users = user.add_prefs(users)
+    users = user.load_features(users, 'features_2016.txt')
+    # users = user.calc_prefs(users)
+    users = user.load_prefs(users, 'preferences_2016.txt')
+    users_dict = user.map_users_list_to_dict(users)
     print "id: %d, prefs: %s" % (users[0].id, users[0].prefs[0:10])
+    for u in users[0].prefs[0:40]:
+        print "id: %d, dist: %s" % (u, users[0].dist(users_dict[u]))
 
 run_iter_da_for_all()

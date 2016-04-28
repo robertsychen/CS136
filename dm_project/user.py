@@ -52,19 +52,30 @@ def gen_users(n):
 
 # calculate, sort, and insert preferences on all users
 # returns the list of users again
-def add_prefs(users, compatible_only=False):
+# takes a looooong time because of the sorting/distance calculations
+# thus the write to file option
+def calc_prefs(users, save=True, compatible_only=False):
     for u1 in users:
         distances_and_ids = []
-        for u2 in users if u2.id != u1.id:
+        for u2 in users:
             dist = u1.dist(u2) if (compatible_only and
                                    u1.is_compatibile(u2)) else -1
-            distances_and_ids += (u2.id, dist)
+            if u2.id != u1.id:
+                distances_and_ids += (u2.id, dist)
         distances_and_ids = [(u2.id, u1.dist(u2))
                              for u2 in users if u2.id != u1.id]
         distances_and_ids.sort(key=itemgetter(1))
         # print distances_and_ids
         u1.prefs = [u[0] for u in distances_and_ids]
         print 'Loaded prefs for user %d: %s ....' % (u1.id, u1.prefs[0:5])
+    if save:
+        outfile = raw_input("Filename to save to prefs to?:")
+        f = open(outfile, 'w')
+        for u in users:
+            f.write((str)(u.id) + ":")
+            f.write(':'.join(map((str), u.prefs)))
+            f.write('\n')
+        f.close()
     return users
 
 
@@ -100,7 +111,10 @@ def load_users(filename):
     return users
 
 
-def add_features_to_users(users, filename):
+# load features from file and add to users
+# file has format id:feature:feature:...
+# returns array of users with features added
+def load_features(users, filename):
     f = open(filename)
     for line in f:
         id_and_features = line.split(':')
@@ -117,3 +131,32 @@ def add_features_to_users(users, filename):
         users[u_index].features = features
     f.close()
     return users
+
+
+def load_prefs(users, filename):
+    f = open(filename)
+    for line in f:
+        id_and_prefs = line.split(':')
+        # array index not guaranteed to equal id!!!
+        # (but in general, since we sorted and users can only be missing
+        # id should be lower than actual index; so we can speed up the search)
+        u_id = (int)(id_and_prefs[0])
+        u_index = min(len(users) - 1, u_id)
+        while u_index >= 0:
+            if users[u_index].id == u_id:
+                break
+            u_index -= 1
+        prefs = map((int), id_and_prefs[1:-1])
+        users[u_index].prefs = prefs
+        print "loaded preferences for user %d" % u_id
+    f.close()
+    return users
+
+
+# handy for when you don't want to constantly have to look through the list...
+# maps users in list to a dict, where dict key is user id and val is user
+def map_users_list_to_dict(users):
+    users_dict = {}
+    for u in users:
+        users_dict[u.id] = u
+    return users_dict
