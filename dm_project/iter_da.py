@@ -23,7 +23,8 @@ def iter_da_within_group(people, people_ids, target_min, matches, all_users_ids)
     receive = copy.deepcopy(people)
     propose_dict = user.map_users_list_to_dict(propose)
     receive_dict = user.map_users_list_to_dict(receive)
-    for i in range((int(target_min) + 1) / 2):
+    #for i in range((int(target_min) + 1) / 2):
+    for i in range(int(target_min)):
 
         still_unmatched_proposers = True
 
@@ -171,25 +172,16 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
                     still_unmatched_proposers = True
                     break
 
-        #update matches_needed for bigger side
-        #check if any user still needs more matches
-        #flag any users that are dropping out
-        need_more_matches = False
-        for u in larger:
-            if (u.current_match is not None) and (u.current_match != 0):
-                u.matches_needed -= 1
-            if u.matches_needed > 0:
-                need_more_matches = True
-            else:
-                u.dropped_out = True
-
         #add matches from this round to master matches list
         #remove this round's match from preference list
         #reset user fields for next iteration
+        #update matches_needed for bigger side
         for u in propose:
             if u.current_match != 0:
                 if (u.current_match not in matches[u.id]):
                     matches[u.id].append(u.current_match)
+                    if propose_is_larger:
+                        u.matches_needed -= 1
                 u.temp_prefs.remove(u.current_match)
             u.prop_pos = 0
             u.current_match = None
@@ -197,9 +189,20 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
             if (u.current_match is not None):
                 if (u.current_match not in matches[u.id]):
                     matches[u.id].append(u.current_match)
+                    if not propose_is_larger:
+                        u.matches_needed -= 1
                 u.temp_prefs.remove(u.current_match)
             u.rec_rank = None
             u.current_match = None
+
+        #check if any user still needs more matches
+        #flag any users that are dropping out
+        need_more_matches = False
+        for u in larger:
+            if u.matches_needed > 0:
+                need_more_matches = True
+            else:
+                u.dropped_out = True
 
     return matches
 
