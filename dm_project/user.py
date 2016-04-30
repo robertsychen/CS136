@@ -4,6 +4,7 @@ import math
 # see http://stackoverflow.com/questions/10695139/
 # sort-a-list-of-tuples-by-2nd-item-integer-value
 from operator import itemgetter
+import numpy as np
 
 
 class User(object):
@@ -20,6 +21,12 @@ class User(object):
         self.gender = gender
         self.seeking = seeking
         self.prefs = prefs
+        self.temp_prefs = None #used in Iterated DA
+        self.prop_pos = 0 #used in Iterated DA: next person to propose to (for proposing side)
+        self.current_match = None #used in Iterated DA
+        self.rec_rank = None #used in Iterated DA: rank in temp_prefs for current_match (for recieving side)
+        self.matches_needed = None #used in Iterated DA (between_groups version)
+        self.dropped_out = False #used in Iterated DA (between_groups version)
 
     def __str__(self):
         return "id: %d, features: %s, gender: %d, seeking: %d, prefs: %s" % (
@@ -160,3 +167,71 @@ def map_users_list_to_dict(users):
     for u in users:
         users_dict[u.id] = u
     return users_dict
+
+#takes dictionary of matches (with key = id, value = unsorted list of matches)
+#and sorts all users' lists
+def sort_all_match_lists(matches, users_dict):
+    for key in matches:
+        this_user = users_dict[key]
+        temp_list = []
+        for u_id in matches[key]:
+            temp_list.append((this_user.dist(users_dict[u_id]),u_id))
+        temp_list.sort()
+        matches[key] = [x[1] for x in temp_list]
+    return matches
+
+#look at min, max, distribution of number of matches users have after running matching algorithm
+#assumes matches is dictionary w/ key = id, value = list of matches
+def analyze_num_matches(matches, users_dict):
+    homo_m_num = []
+    homo_f_num = []
+    heter_m_num = []
+    heter_f_num = []
+    bi_m_num = []
+    bi_f_num = []
+    for u_id in matches:
+        u = users_dict[u_id]
+        if u.gender == 0:
+            if u.seeking == 0:
+                homo_m_num.append(len(matches[u_id]))
+            elif u.seeking == 1:
+                heter_m_num.append(len(matches[u_id]))
+            else:
+                bi_m_num.append(len(matches[u_id]))
+        else:
+            if u.seeking == 0:
+                heter_f_num.append(len(matches[u_id]))
+            elif u.seeking == 1:
+                homo_f_num.append(len(matches[u_id]))
+            else:
+                bi_f_num.append(len(matches[u_id]))
+    print "Min, mean, max number of matches:"
+    print "Homo males: " + str(min(homo_m_num)) + ", " + str(np.asarray(homo_m_num).mean()) + ", " str(max(homo_m_num))
+    print "Homo females: " + str(min(homo_f_num)) + ", " + str(np.asarray(homo_f_num).mean()) + ", " str(max(homo_f_num))
+    print "Heter males: " + str(min(heter_m_num)) + ", " + str(np.asarray(heter_m_num).mean()) + ", " str(max(heter_m_num))
+    print "Heter females: " + str(min(heter_f_num)) + ", " + str(np.asarray(heter_f_num).mean()) + ", " str(max(heter_f_num))
+    print "Bi males: " + str(min(bi_m_num)) + ", " + str(np.asarray(bi_m_num).mean()) + ", " str(max(bi_m_num))
+    print "Bi females: " + str(min(bi_f_num)) + ", " + str(np.asarray(bi_f_num).mean()) + ", " str(max(bi_f_num))
+    
+def analyze_rank_utility(matches, users_dict):
+    utilities = []
+    for u_id in matches:
+        this_utility = []
+        for v_id in matches[u_id]:
+            this_utility.append(users_dict[u_id].prefs.index(v_id) + 1)
+        utilities.append(np.asarray(this_utility).mean())
+    print "Min average rank: " + str(min(utilities))
+    print "Mean average rank: " + str(np.asarray(utilities).mean())
+    print "Max average rank: " + str(max(utilities))
+
+
+def analyze_distance_utility(matches, users_dict):
+    utilities = []
+    for u_id in matches:
+        this_utility = []
+        for v_id in matches[u_id]:
+            this_utility.append(users_dict[u_id].dist(users_dict[v_id]))
+        utilities.append(np.asarray(this_utility).mean())
+    print "Min average distance: " + str(min(utilities))
+    print "Mean average distance: " + str(np.asarray(utilities).mean())
+    print "Max average distance: " + str(max(utilities))
