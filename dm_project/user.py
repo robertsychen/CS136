@@ -101,10 +101,10 @@ def load_users(filename):
         # get user details
         u_details = line.split(':')
         u_id = (int)(u_details[0])
-        u_gender = 0 if (u_details[4] == 'Male') else 1
-        if u_details[5] == 'Men':
+        u_gender = 0 if (u_details[3] == 'Male') else 1
+        if u_details[4] == 'Men':
             u_seeking = 0
-        elif u_details[5] == 'Women':
+        elif u_details[4] == 'Women':
             u_seeking = 1
         else:
             u_seeking = 2
@@ -206,12 +206,12 @@ def analyze_num_matches(matches, users_dict):
             else:
                 bi_f_num.append(len(matches[u_id]))
     print "Min, mean, max number of matches:"
-    print "Homo males: " + str(min(homo_m_num)) + ", " + str(np.asarray(homo_m_num).mean()) + ", " str(max(homo_m_num))
-    print "Homo females: " + str(min(homo_f_num)) + ", " + str(np.asarray(homo_f_num).mean()) + ", " str(max(homo_f_num))
-    print "Heter males: " + str(min(heter_m_num)) + ", " + str(np.asarray(heter_m_num).mean()) + ", " str(max(heter_m_num))
-    print "Heter females: " + str(min(heter_f_num)) + ", " + str(np.asarray(heter_f_num).mean()) + ", " str(max(heter_f_num))
-    print "Bi males: " + str(min(bi_m_num)) + ", " + str(np.asarray(bi_m_num).mean()) + ", " str(max(bi_m_num))
-    print "Bi females: " + str(min(bi_f_num)) + ", " + str(np.asarray(bi_f_num).mean()) + ", " str(max(bi_f_num))
+    print "Homo males: " + str(min(homo_m_num)) + ", " + str(np.asarray(homo_m_num).mean()) + ", " + str(max(homo_m_num))
+    print "Homo females: " + str(min(homo_f_num)) + ", " + str(np.asarray(homo_f_num).mean()) + ", " + str(max(homo_f_num))
+    print "Heter males: " + str(min(heter_m_num)) + ", " + str(np.asarray(heter_m_num).mean()) + ", " + str(max(heter_m_num))
+    print "Heter females: " + str(min(heter_f_num)) + ", " + str(np.asarray(heter_f_num).mean()) + ", " + str(max(heter_f_num))
+    print "Bi males: " + str(min(bi_m_num)) + ", " + str(np.asarray(bi_m_num).mean()) + ", " + str(max(bi_m_num))
+    print "Bi females: " + str(min(bi_f_num)) + ", " + str(np.asarray(bi_f_num).mean()) + ", " + str(max(bi_f_num))
     
 def analyze_rank_utility(matches, users_dict):
     utilities = []
@@ -235,3 +235,17 @@ def analyze_distance_utility(matches, users_dict):
     print "Min average distance: " + str(min(utilities))
     print "Mean average distance: " + str(np.asarray(utilities).mean())
     print "Max average distance: " + str(max(utilities))
+
+#take 2016 matches txt file and convert into data structure for matches: dictionary of users' ids & ranked list of ids of their matches
+def format_2016_matches(filename):
+    '''
+    f = open(filename)
+    for line in f:
+        # get user details
+        u_details = line.split(':')
+        '''
+    pass
+
+
+#NOTE: need to write function to compute utility for matches_2016.txt
+#be sure to normalize in some appropriate way as far as diff. # of matches in our methods vs. 2016 method
