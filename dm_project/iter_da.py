@@ -152,9 +152,6 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
 
                     if target_id != 0:
                         target = receive_dict[target_id]
-                        
-                        if u.id == 484:
-                            print target.id
 
                         if (target.current_match is None) or (target.temp_prefs.index(u.id) < target.rec_rank):
                             #accept the proposal
@@ -216,26 +213,6 @@ def run_iter_da_for_all():
     # users = user.calc_prefs(users)
     users = user.load_prefs(users, 'preferences_2016.txt')
 
-
-    #test stuff out
-    co = 0
-    for u in users:
-        assert(len(u.prefs) == 4194)
-        co +=1
-    print co
-    assert(0==1)
-
-    #WEIRD SPECIAL CASE WITH ID 484
-    for u in users:
-        if 484 in u.prefs:
-            u.prefs.remove(484)
-        if 484 in u.prefs:
-            u.prefs.remove(484)
-        if u.id == 484:
-            users.remove(u)
-
-
-
     users_dict = user.map_users_list_to_dict(users)
     all_users_ids = users_dict.keys()
 
@@ -264,13 +241,6 @@ def run_iter_da_for_all():
     bi_m_id = []
     bi_f_id = [] 
     for u in users:
-
-        #WEIRD SPECIAL CASE WITH ID 484
-        print u.id
-        assert(u.id != 484)
-        if 484 in u.prefs:
-            u.prefs.remove(484)
-        assert(484 not in u.prefs)
 
         matches[u.id] = []
         if u.gender == 0:
@@ -312,13 +282,13 @@ def run_iter_da_for_all():
 
     #call the iterated DA functions in 6 stages
     print "Computing matchings for homosexual & bisexual males..."
-    #matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
+    matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
     print "Computing matchings for homosexual & bisexual females..."
-    #matches = iter_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
+    matches = iter_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
     print "Computing matchings for homosexual males..."
-    #matches = iter_da_within_group(homo_male, homo_m_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
+    matches = iter_da_within_group(homo_male, homo_m_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     print "Computing matchings for homosexual females..."
-    #matches = iter_da_within_group(homo_female, homo_f_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
+    matches = iter_da_within_group(homo_female, homo_f_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     print "Computing matchings for bisexual & heterosexual males & females..."
     matches = iter_da_between_groups((heter_male + bi_male), (heter_m_id + bi_m_id), (heter_female + bi_female), (heter_f_id + bi_f_id), (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     print "Computing matchings for heterosexual males & females..."

@@ -153,7 +153,7 @@ def load_prefs(users, filename):
             if users[u_index].id == u_id:
                 break
             u_index -= 1
-        prefs = map((int), id_and_prefs[1:-1])
+        prefs = map((int), id_and_prefs[1:])
         users[u_index].prefs = prefs
         print "loaded preferences for user %d" % u_id
     f.close()
