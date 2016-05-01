@@ -5,6 +5,7 @@ import math
 # sort-a-list-of-tuples-by-2nd-item-integer-value
 from operator import itemgetter
 import numpy as np
+import re
 
 
 class User(object):
@@ -25,7 +26,7 @@ class User(object):
         self.prop_pos = 0 #used in Iterated DA: next person to propose to (for proposing side)
         self.current_match = None #used in Iterated DA
         self.rec_rank = None #used in Iterated DA: rank in temp_prefs for current_match (for recieving side)
-        self.matches_needed = None #used in Iterated DA (between_groups version)
+        self.matches_needed = None #used in Iterated DA
         self.dropped_out = False #used in Iterated DA (between_groups version)
 
     def __str__(self):
@@ -224,6 +225,33 @@ def analyze_rank_utility(matches, users_dict):
     print "Mean average rank: " + str(np.asarray(utilities).mean())
     print "Max average rank: " + str(max(utilities))
 
+    #compute only for heterosexual males (to compare differences between two sides proposing)
+    utilities = []
+    for u_id in matches:
+        if (users_dict[u_id].gender != 0) or (users_dict[u_id].seeking != 1):
+            continue
+        this_utility = []
+        for v_id in matches[u_id]:
+            this_utility.append(users_dict[u_id].prefs.index(v_id) + 1)
+        utilities.append(np.asarray(this_utility).mean())
+    print "And for heterosexual males only:"
+    print "Min average rank: " + str(min(utilities))
+    print "Mean average rank: " + str(np.asarray(utilities).mean())
+    print "Max average rank: " + str(max(utilities))
+
+    #compute only for heterosexual females (to compare differences between two sides proposing)
+    utilities = []
+    for u_id in matches:
+        if (users_dict[u_id].gender != 1) or (users_dict[u_id].seeking != 0):
+            continue
+        this_utility = []
+        for v_id in matches[u_id]:
+            this_utility.append(users_dict[u_id].prefs.index(v_id) + 1)
+        utilities.append(np.asarray(this_utility).mean())
+    print "And for heterosexual females only:"
+    print "Min average rank: " + str(min(utilities))
+    print "Mean average rank: " + str(np.asarray(utilities).mean())
+    print "Max average rank: " + str(max(utilities))
 
 def analyze_distance_utility(matches, users_dict):
     utilities = []
@@ -236,16 +264,32 @@ def analyze_distance_utility(matches, users_dict):
     print "Mean average distance: " + str(np.asarray(utilities).mean())
     print "Max average distance: " + str(max(utilities))
 
-#take 2016 matches txt file and convert into data structure for matches: dictionary of users' ids & ranked list of ids of their matches
-def format_2016_matches(filename):
-    '''
-    f = open(filename)
-    for line in f:
-        # get user details
-        u_details = line.split(':')
-        '''
-    pass
+    #compute only for heterosexual males (to compare differences between two sides proposing)
+    utilities = []
+    for u_id in matches:
+        if (users_dict[u_id].gender != 0) or (users_dict[u_id].seeking != 1):
+            continue
+        this_utility = []
+        for v_id in matches[u_id]:
+            this_utility.append(users_dict[u_id].dist(users_dict[v_id]))
+        utilities.append(np.asarray(this_utility).mean())
+    print "And for heterosexual males only:"
+    print "Min average distance: " + str(min(utilities))
+    print "Mean average distance: " + str(np.asarray(utilities).mean())
+    print "Max average distance: " + str(max(utilities))
 
+    #compute only for heterosexual females (to compare differences between two sides proposing)
+    utilities = []
+    for u_id in matches:
+        if (users_dict[u_id].gender != 1) or (users_dict[u_id].seeking != 0):
+            continue
+        this_utility = []
+        for v_id in matches[u_id]:
+            this_utility.append(users_dict[u_id].dist(users_dict[v_id]))
+        utilities.append(np.asarray(this_utility).mean())
+    print "And for heterosexual females only:"
+    print "Min average distance: " + str(min(utilities))
+    print "Mean average distance: " + str(np.asarray(utilities).mean())
+    print "Max average distance: " + str(max(utilities))
 
-#NOTE: need to write function to compute utility for matches_2016.txt
-#be sure to normalize in some appropriate way as far as diff. # of matches in our methods vs. 2016 method
+#could add utility for just the top match instead of average over all matches

@@ -23,13 +23,20 @@ def iter_da_within_group(people, people_ids, target_min, matches, all_users_ids)
     receive = copy.deepcopy(people)
     propose_dict = user.map_users_list_to_dict(propose)
     receive_dict = user.map_users_list_to_dict(receive)
+
+    #dictionary for how many matches have been obtained: shared between propose and receive
+    matches_needed = {}
+    for u_id in people_ids:
+        matches_needed[u_id] = target_min
+
     #for i in range((int(target_min) + 1) / 2):
-    for i in range(int(target_min)):
+    #for i in range(int(target_min)):
+    still_need_matches = True
+    while (still_need_matches):
 
         still_unmatched_proposers = True
 
         while (still_unmatched_proposers):
-
             #do proposing
             for u in propose:
                 if u.current_match is None:
@@ -62,6 +69,7 @@ def iter_da_within_group(people, people_ids, target_min, matches, all_users_ids)
             if u.current_match != 0:
                 if (u.current_match not in matches[u.id]):
                     matches[u.id].append(u.current_match)
+                    matches_needed[u.id] -= 1
                 u.temp_prefs.remove(u.current_match)
             u.prop_pos = 0
             u.current_match = None
@@ -69,9 +77,16 @@ def iter_da_within_group(people, people_ids, target_min, matches, all_users_ids)
             if (u.current_match is not None):
                 if (u.current_match not in matches[u.id]):
                     matches[u.id].append(u.current_match)
+                    matches_needed[u.id] -= 1
                 u.temp_prefs.remove(u.current_match)
             u.rec_rank = None
             u.current_match = None
+
+        #check whether we need to run more iterations or not
+        still_need_matches = False
+        for key in matches_needed:
+            if matches_needed[key] > 0:
+                still_need_matches = True
 
     return matches
 
@@ -142,11 +157,19 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
                     target_id = None
                     while True:
                         target_id = u.temp_prefs[u.prop_pos]
+
+                        #if u.id == 16:
+                            #print target_id
+
                         if target_id == 0:
                         #not getting matched this round
                             u.current_match = 0
                             break
                         u.prop_pos += 1
+
+                        #if u.id == 16:
+                            #print u.prop_pos
+
                         if not receive_dict[target_id].dropped_out:
                             #found a valid target id
                             break
@@ -177,15 +200,26 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
         #reset user fields for next iteration
         #update matches_needed for bigger side
         for u in propose:
+            if u.dropped_out:
+                continue
+
             if u.current_match != 0:
                 if (u.current_match not in matches[u.id]):
                     matches[u.id].append(u.current_match)
                     if propose_is_larger:
                         u.matches_needed -= 1
-                u.temp_prefs.remove(u.current_match)
+                #print u.id
+                #print u.temp_prefs
+                #print u.current_match
+                #print u.prop_pos
+                if u.current_match is not None:
+                    u.temp_prefs.remove(u.current_match)
             u.prop_pos = 0
             u.current_match = None
         for u in receive:
+            if u.dropped_out:
+                continue
+
             if (u.current_match is not None):
                 if (u.current_match not in matches[u.id]):
                     matches[u.id].append(u.current_match)
@@ -286,16 +320,24 @@ def run_iter_da_for_all():
     #call the iterated DA functions in 6 stages
     print "Computing matchings for homosexual & bisexual males..."
     matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
+    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for homosexual & bisexual females..."
     matches = iter_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
+    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for homosexual males..."
     matches = iter_da_within_group(homo_male, homo_m_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
+    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for homosexual females..."
     matches = iter_da_within_group(homo_female, homo_f_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
+    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for bisexual & heterosexual males & females..."
     matches = iter_da_between_groups((heter_male + bi_male), (heter_m_id + bi_m_id), (heter_female + bi_female), (heter_f_id + bi_f_id), (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
+    #matches = iter_da_between_groups((heter_female + bi_female), (heter_f_id + bi_f_id), (heter_male + bi_male), (heter_m_id + bi_m_id), (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
+    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for heterosexual males & females..."
     matches = iter_da_between_groups(heter_male, heter_m_id, heter_female, heter_f_id, (overall_target_min * mixing_ratio), matches, all_users_ids)
+    #matches = iter_da_between_groups(heter_female, heter_f_id, heter_male, heter_m_id, (overall_target_min * mixing_ratio), matches, all_users_ids)
+    user.analyze_num_matches(matches, users_dict)
 
     #create ranked list for each person by sorting their matches
     user.sort_all_match_lists(matches, users_dict)
