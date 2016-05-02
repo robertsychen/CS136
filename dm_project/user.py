@@ -22,24 +22,15 @@ class User(object):
         self.gender = gender
         self.seeking = seeking
         self.prefs = prefs
-<<<<<<< HEAD
-        self.temp_prefs = None  # used in Iterated DA
-        self.prop_pos = 0  # used in Iterated DA: next person to propose to (for proposing side)
-        self.current_match = None  # used in Iterated DA
-        self.rec_rank = None  # used in Iterated DA: rank in temp_prefs for current_match (for recieving side)
-        self.matches_needed = None  # used in Iterated DA
-        self.dropped_out = False  # used in Iterated DA (between_groups version)
-=======
         self.temp_prefs = None # used in many-to-many and Iterated DA
         self.temp_pref_ranks = None # used in many-to-many DA
-        self.prop_pos = 0 #used in Iterated DA: next person to propose to (for proposing side)
-        self.current_match = None #used in Iterated DA
+        self.prop_pos = 0 # used in Iterated DA: next person to propose to (for proposing side)
+        self.current_match = None # used in Iterated DA
         self.match_list = [] # used in many-to-many DA
-        self.rec_rank = None #used in Iterated DA: rank in temp_prefs for current_match (for recieving side)
-        self.matches_needed = None #used in Iterated DA
+        self.rec_rank = None # used in Iterated DA: rank in temp_prefs for current_match (for receiving side)
+        self.matches_needed = None # used in Iterated DA
         self.quota = None # used in many-to-many DA
-        self.dropped_out = False #used in Iterated DA (between_groups version)
->>>>>>> cc969917db64cb4bd32507791bbb525adeaa9e12
+        self.dropped_out = False # used in Iterated DA (between_groups version)
 
     def __str__(self):
         return "id: %d, features: %s, gender: %d, seeking: %d, prefs: %s" % (
