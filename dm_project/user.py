@@ -22,12 +22,12 @@ class User(object):
         self.gender = gender
         self.seeking = seeking
         self.prefs = prefs
-        self.temp_prefs = None #used in Iterated DA
-        self.prop_pos = 0 #used in Iterated DA: next person to propose to (for proposing side)
-        self.current_match = None #used in Iterated DA
-        self.rec_rank = None #used in Iterated DA: rank in temp_prefs for current_match (for recieving side)
-        self.matches_needed = None #used in Iterated DA
-        self.dropped_out = False #used in Iterated DA (between_groups version)
+        self.temp_prefs = None  # used in Iterated DA
+        self.prop_pos = 0  # used in Iterated DA: next person to propose to (for proposing side)
+        self.current_match = None  # used in Iterated DA
+        self.rec_rank = None  # used in Iterated DA: rank in temp_prefs for current_match (for recieving side)
+        self.matches_needed = None  # used in Iterated DA
+        self.dropped_out = False  # used in Iterated DA (between_groups version)
 
     def __str__(self):
         return "id: %d, features: %s, gender: %d, seeking: %d, prefs: %s" % (
@@ -169,20 +169,23 @@ def map_users_list_to_dict(users):
         users_dict[u.id] = u
     return users_dict
 
-#takes dictionary of matches (with key = id, value = unsorted list of matches)
-#and sorts all users' lists
+# takes dictionary of matches (with key = id, value = unsorted list of matches)
+# and sorts all users' lists
+# used at end of all stages to combine matches
 def sort_all_match_lists(matches, users_dict):
     for key in matches:
         this_user = users_dict[key]
         temp_list = []
         for u_id in matches[key]:
-            temp_list.append((this_user.dist(users_dict[u_id]),u_id))
+            temp_list.append((this_user.dist(users_dict[u_id]), u_id))
         temp_list.sort()
         matches[key] = [x[1] for x in temp_list]
     return matches
 
-#look at min, max, distribution of number of matches users have after running matching algorithm
-#assumes matches is dictionary w/ key = id, value = list of matches
+
+# look at min, max, distribution of number of matches users have after running matching algorithm
+# assumes matches is dictionary w/ key = id, value = list of matches
+# returns dict of num matches histograms
 def analyze_num_matches(matches, users_dict):
     homo_m_num = []
     homo_f_num = []
@@ -206,6 +209,7 @@ def analyze_num_matches(matches, users_dict):
                 homo_f_num.append(len(matches[u_id]))
             else:
                 bi_f_num.append(len(matches[u_id]))
+    num_matches = {}
     print "Min, mean, max number of matches:"
     print "Homo males: " + str(min(homo_m_num)) + ", " + str(np.asarray(homo_m_num).mean()) + ", " + str(max(homo_m_num))
     print "Homo females: " + str(min(homo_f_num)) + ", " + str(np.asarray(homo_f_num).mean()) + ", " + str(max(homo_f_num))
@@ -213,7 +217,8 @@ def analyze_num_matches(matches, users_dict):
     print "Heter females: " + str(min(heter_f_num)) + ", " + str(np.asarray(heter_f_num).mean()) + ", " + str(max(heter_f_num))
     print "Bi males: " + str(min(bi_m_num)) + ", " + str(np.asarray(bi_m_num).mean()) + ", " + str(max(bi_m_num))
     print "Bi females: " + str(min(bi_f_num)) + ", " + str(np.asarray(bi_f_num).mean()) + ", " + str(max(bi_f_num))
-    
+
+
 def analyze_rank_utility(matches, users_dict):
     utilities = []
     for u_id in matches:
@@ -225,7 +230,7 @@ def analyze_rank_utility(matches, users_dict):
     print "Mean average rank: " + str(np.asarray(utilities).mean())
     print "Max average rank: " + str(max(utilities))
 
-    #compute only for heterosexual males (to compare differences between two sides proposing)
+    # compute only for heterosexual males (to compare differences between two sides proposing)
     utilities = []
     for u_id in matches:
         if (users_dict[u_id].gender != 0) or (users_dict[u_id].seeking != 1):
@@ -239,7 +244,7 @@ def analyze_rank_utility(matches, users_dict):
     print "Mean average rank: " + str(np.asarray(utilities).mean())
     print "Max average rank: " + str(max(utilities))
 
-    #compute only for heterosexual females (to compare differences between two sides proposing)
+    # compute only for heterosexual females (to compare differences between two sides proposing)
     utilities = []
     for u_id in matches:
         if (users_dict[u_id].gender != 1) or (users_dict[u_id].seeking != 0):
@@ -252,6 +257,7 @@ def analyze_rank_utility(matches, users_dict):
     print "Min average rank: " + str(min(utilities))
     print "Mean average rank: " + str(np.asarray(utilities).mean())
     print "Max average rank: " + str(max(utilities))
+
 
 def analyze_distance_utility(matches, users_dict):
     utilities = []
@@ -264,7 +270,7 @@ def analyze_distance_utility(matches, users_dict):
     print "Mean average distance: " + str(np.asarray(utilities).mean())
     print "Max average distance: " + str(max(utilities))
 
-    #compute only for heterosexual males (to compare differences between two sides proposing)
+    # compute only for heterosexual males (to compare differences between two sides proposing)
     utilities = []
     for u_id in matches:
         if (users_dict[u_id].gender != 0) or (users_dict[u_id].seeking != 1):
@@ -278,7 +284,7 @@ def analyze_distance_utility(matches, users_dict):
     print "Mean average distance: " + str(np.asarray(utilities).mean())
     print "Max average distance: " + str(max(utilities))
 
-    #compute only for heterosexual females (to compare differences between two sides proposing)
+    # compute only for heterosexual females (to compare differences between two sides proposing)
     utilities = []
     for u_id in matches:
         if (users_dict[u_id].gender != 1) or (users_dict[u_id].seeking != 0):
@@ -292,4 +298,4 @@ def analyze_distance_utility(matches, users_dict):
     print "Mean average distance: " + str(np.asarray(utilities).mean())
     print "Max average distance: " + str(max(utilities))
 
-#could add utility for just the top match instead of average over all matches
+# could add utility for just the top match instead of average over all matches
