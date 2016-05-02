@@ -2,7 +2,7 @@ import re
 import user
 from user import User
 
-#take 2016 matches txt file and convert into data structure for matches: dictionary of users' ids & ranked list of ids of their matches
+# take 2016 matches txt file and convert into data structure for matches: dictionary of users' ids & ranked list of ids of their matches
 def format_2016_matches(filename):
     matches = {}
     f = open(filename)
@@ -30,17 +30,17 @@ def analyze_2016_algo():
 
     del matches[3148]
 
-    #user.sort_all_match_lists(matches, users_dict)
+    # user.sort_all_match_lists(matches, users_dict)
 
-    #check on how many matches people actually have
+    # check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
 
-    #check the utility values from rank perspective and distance perspective
+    # check the utility values from rank perspective and distance perspective
     user.analyze_rank_utility(matches, users_dict)
     user.analyze_distance_utility(matches, users_dict)
 
 analyze_2016_algo()
 
 
-#NOTE: need to write function to compute utility for matches_2016.txt
-#be sure to normalize in some appropriate way as far as diff. # of matches in our methods vs. 2016 method
+# NOTE: need to write function to compute utility for matches_2016.txt
+# be sure to normalize in some appropriate way as far as diff. # of matches in our methods vs. 2016 method

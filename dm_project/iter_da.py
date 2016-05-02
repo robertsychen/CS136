@@ -97,12 +97,6 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
     propose_dict = user.map_users_list_to_dict(propose)
     receive_dict = user.map_users_list_to_dict(receive)
 
-    # WEIRD SPECIAL CASE IDK
-    # receive_dict[283].prefs.append(484)
-    # receive_dict[1642].prefs.append(484)
-    # receive_dict[151].prefs.append(484)
-
-    # precompute whether each user is within propose and/or receive group
     prop_dict = {}
     for u_id in all_users_ids:
         prop_dict[u_id] = False
@@ -136,8 +130,6 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
         larger = receive # shallow copy
         smaller = propose # shallow copy
         propose_is_larger = False
-    # larger_size = max(len(propose_ids), len(receive_ids))
-    # smaller_size = min(len(propose_ids), len(receive_ids))
 
     # assign number of matches before dropping out
     for u in larger:
@@ -158,18 +150,11 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
                     target_id = None
                     while True:
                         target_id = u.temp_prefs[u.prop_pos]
-
-                        # if u.id == 16:
-                            # print target_id
-
                         if target_id == 0:
                         # not getting matched this round
                             u.current_match = 0
                             break
                         u.prop_pos += 1
-
-                        # if u.id == 16:
-                            # print u.prop_pos
 
                         if not receive_dict[target_id].dropped_out:
                             # found a valid target id
@@ -267,7 +252,7 @@ def run_iter_da_for_all():
     Record ids for each group
     Set up dictionary to hold everyone's matchings
     '''
-    
+
     matches = {}
     homo_male = []
     homo_female = []
@@ -323,7 +308,6 @@ def run_iter_da_for_all():
     ITERATED DA
     Find matches in 6 stages
     '''
-
     print "Computing matchings for homosexual & bisexual males..."
     matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
