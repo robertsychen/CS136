@@ -318,9 +318,26 @@ def run_iter_da_for_all():
 
     #check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
+    
+    compatible_sizes = [
+        [
+            len(homo_male) + len(bi_male),
+            len(heter_female) + len(bi_female),
+            len(homo_male) + len(heter_female) + len(bi_male) + len(bi_female)
+        ],
+        [
+            len(homo_female) + len(bi_female),
+            len(heter_male) + len(bi_male),
+            len(homo_female) + len(heter_male) + len(bi_male) + len(bi_female)
+        ]
+    ]
 
-    #check the utility values from rank perspective and distance perspective -- in two separate functions
-    user.analyze_rank_utility(matches, users_dict)
-    user.analyze_distance_utility(matches, users_dict)
+    for i in range(1, 4, 1):
+        print '#####################################'
+        print 'TOP %s MATCHES' % i
+        print '#####################################'
+        #check the utility values from rank perspective and distance perspective -- in two separate functions
+        user.analyze_rank_utility(matches, users_dict, compatible_sizes, i)
+        user.analyze_distance_utility(matches, users_dict, i)
 
 run_iter_da_for_all()
