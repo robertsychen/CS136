@@ -6,11 +6,13 @@ import math
 from operator import itemgetter
 import numpy as np
 import re
-
+from termcolor import colored, cprint
 
 class User(object):
 
     num_features = 10
+    genders = [0, 1]
+    seekings = [0, 1, 2]
     # lazily define some constants for gender and seeking
     # 0 = male, 1 = female
     # 0 = male, 1 = female, 2 = both
@@ -22,14 +24,6 @@ class User(object):
         self.gender = gender
         self.seeking = seeking
         self.prefs = prefs
-<<<<<<< HEAD
-        self.temp_prefs = None  # used in Iterated DA
-        self.prop_pos = 0  # used in Iterated DA: next person to propose to (for proposing side)
-        self.current_match = None  # used in Iterated DA
-        self.rec_rank = None  # used in Iterated DA: rank in temp_prefs for current_match (for recieving side)
-        self.matches_needed = None  # used in Iterated DA
-        self.dropped_out = False  # used in Iterated DA (between_groups version)
-=======
         self.temp_prefs = None # used in many-to-many and Iterated DA
         self.temp_pref_ranks = None # used in many-to-many DA
         self.prop_pos = 0 #used in Iterated DA: next person to propose to (for proposing side)
@@ -39,7 +33,6 @@ class User(object):
         self.matches_needed = None #used in Iterated DA
         self.quota = None # used in many-to-many DA
         self.dropped_out = False #used in Iterated DA (between_groups version)
->>>>>>> cc969917db64cb4bd32507791bbb525adeaa9e12
 
     def __str__(self):
         return "id: %d, features: %s, gender: %d, seeking: %d, prefs: %s" % (
@@ -53,11 +46,13 @@ class User(object):
             d_squares += abs(pow(self.features[i], 2) - pow(u.features[i], 2))
         return math.sqrt(d_squares)
 
-    # is gender compatible with other user?
+    # is compatible with other user?
     def is_compatibile(self, u):
-        return (u.gender == 0 and (self.seeking == 0 or self.seeking == 2) or
-                u.gender == 1 and (self.seeking == 1 or self.seeking == 2))
-
+        self_likes = (u.gender == 0 and (self.seeking == 0 or self.seeking == 2) or
+                     (u.gender == 1 and (self.seeking == 1 or self.seeking == 2)
+        u_likes = (self.gender == 0 and (u.seeking == 0 or u.seeking == 2) or
+                  (self.gender == 1 and (u.seeking == 1 or u.seeking == 2)
+        return self_likes and u_likes
 
 # generate and return n random users
 # no preference ordering yet
@@ -199,37 +194,37 @@ def sort_all_match_lists(matches, users_dict):
 # assumes matches is dictionary w/ key = id, value = list of matches
 # returns dict of num matches histograms
 def analyze_num_matches(matches, users_dict):
-    homo_m_num = []
-    homo_f_num = []
-    heter_m_num = []
-    heter_f_num = []
-    bi_m_num = []
-    bi_f_num = []
+    num_matches = {}
+    for g in User.genders:
+        for s in User.seekings:
+            num_matches[s][g] = []
+
     for u_id in matches:
         u = users_dict[u_id]
-        if u.gender == 0:
-            if u.seeking == 0:
-                homo_m_num.append(len(matches[u_id]))
-            elif u.seeking == 1:
-                heter_m_num.append(len(matches[u_id]))
-            else:
-                bi_m_num.append(len(matches[u_id]))
-        else:
-            if u.seeking == 0:
-                heter_f_num.append(len(matches[u_id]))
-            elif u.seeking == 1:
-                homo_f_num.append(len(matches[u_id]))
-            else:
-                bi_f_num.append(len(matches[u_id]))
-    num_matches = {}
-    print "Min, mean, max number of matches:"
-    print "Homo males: " + str(min(homo_m_num)) + ", " + str(np.asarray(homo_m_num).mean()) + ", " + str(max(homo_m_num))
-    print "Homo females: " + str(min(homo_f_num)) + ", " + str(np.asarray(homo_f_num).mean()) + ", " + str(max(homo_f_num))
-    print "Heter males: " + str(min(heter_m_num)) + ", " + str(np.asarray(heter_m_num).mean()) + ", " + str(max(heter_m_num))
-    print "Heter females: " + str(min(heter_f_num)) + ", " + str(np.asarray(heter_f_num).mean()) + ", " + str(max(heter_f_num))
-    print "Bi males: " + str(min(bi_m_num)) + ", " + str(np.asarray(bi_m_num).mean()) + ", " + str(max(bi_m_num))
-    print "Bi females: " + str(min(bi_f_num)) + ", " + str(np.asarray(bi_f_num).mean()) + ", " + str(max(bi_f_num))
+        num_matches[u.seeking][u.gender].append(len(matches[u_id]))
 
+    # print out mean, freq list for all match groups
+    print '\033[95m' + 'Min, mean, max number of matches' + '\033[0m'
+    print (colored("Homo males: ", 'green') + ", " +
+           str(np.asarray(num_matches[0][0]).mean()) + ", " +
+           str({x:a.count(x) for x in num_matches[0][0]}))
+    print (colored("Homo females: ", 'green') + ", " +
+           str(np.asarray(num_matches[1][1]).mean()) + ", " +
+           str({x:a.count(x) for x in num_matches[1][1]}))
+    print (colored("Bi males: ", 'green') + ", " +
+           str(np.asarray(num_matches[2][0]).mean()) + ", " +
+           str({x:a.count(x) for x in num_matches[2][0]}))
+    print (colored("Bi females: ", 'green') + ", " +
+           str(np.asarray(num_matches[2][1]).mean()) + ", " +
+           str({x:a.count(x) for x in num_matches[2][1]}))
+    print (colored("Hetero males: ", 'green') + ", " +
+           str(np.asarray(num_matches[1][0]).mean()) + ", " +
+           str({x:a.count(x) for x in num_matches[1][0]}))
+    print (colored("Hetero females: ", 'green') + ", " +
+           str(np.asarray(num_matches[0][1]).mean()) + ", " +
+           str({x:a.count(x) for x in num_matches[0][1]}))
+
+    return num_matches
 
 def analyze_rank_utility(matches, users_dict):
     utilities = []
