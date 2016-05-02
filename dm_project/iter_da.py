@@ -1,7 +1,7 @@
 import user
 from user import User
 import copy
-
+from termcolor import colored, cprint
 
 def iter_da_within_group(people, people_ids, target_min, matches, all_users_ids):
     # precompute whether each user is within this group of people
@@ -136,8 +136,10 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
         u.matches_needed = target_min
 
     need_more_matches = True
+    num_iterations = 1
     while need_more_matches:
-        print "new iteration"
+        print "\rRunning iteration %d" % num_iterations,
+        num_iterations += 1
         # start new iteration of DA
         still_unmatched_proposers = True
         while (still_unmatched_proposers):
@@ -224,18 +226,17 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
             else:
                 u.dropped_out = True
 
+    print colored("Finished matching stage!", "green", atts=["bold"])
     return matches
 
 # return matches on all users
 def run_iter_da_for_all():
 
     # random users or actual datamatch users?
-    # users = user.gen_users(1000)
-    # users = user.add_prefs(users)
+    # users = user.gen_users(500)
+    # users = user.calc_prefs(users, save=False)
     users = user.load_users('anon_data_2016.txt')
     users = user.load_features(users, 'features_2016.txt')
-    # if no prefs exist yet, calculate; otherwise, load
-    # users = user.calc_prefs(users)
     users = user.load_prefs(users, 'preferences_2016.txt')
 
     users_dict = user.map_users_list_to_dict(users)
@@ -299,32 +300,32 @@ def run_iter_da_for_all():
     '''
 
     # temporarily truncate for test reasons
-    # heter_male = heter_male[:100]
-    # heter_female = heter_female[:150]
-    # heter_m_id = heter_m_id[:100]
-    # heter_f_id = heter_f_id[:150]
+    heter_male = heter_male[:100]
+    heter_female = heter_female[:150]
+    heter_m_id = heter_m_id[:100]
+    heter_f_id = heter_f_id[:150]
 
     '''
     ITERATED DA
     Find matches in 6 stages
     '''
-    print "Computing matchings for homosexual & bisexual males..."
-    matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for homosexual & bisexual females..."
-    matches = iter_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for homosexual males..."
-    matches = iter_da_within_group(homo_male, homo_m_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for homosexual females..."
-    matches = iter_da_within_group(homo_female, homo_f_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for bisexual & heterosexual males & females..."
+    # print colored("Computing matchings for homosexual & bisexual males...", 'magenta', attrs=['bold'])
+    # matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
+    # user.analyze_num_matches(matches, users_dict)
+    # print colored("Computing matchings for homosexual & bisexual females...", 'magenta', attrs=['bold'])
+    # matches = iter_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), (overall_target_min * mixing_ratio), matches, all_users_ids)
+    # user.analyze_num_matches(matches, users_dict)
+    # print colored("Computing matchings for homosexual males...", 'magenta', attrs=['bold'])
+    # matches = iter_da_within_group(homo_male, homo_m_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
+    # user.analyze_num_matches(matches, users_dict)
+    # print colored("Computing matchings for homosexual females...", 'magenta', attrs=['bold'])
+    # matches = iter_da_within_group(homo_female, homo_f_id, (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
+    # user.analyze_num_matches(matches, users_dict)
+    print colored("Computing matchings for bisexual & heterosexual males & females...", 'magenta', attrs=['bold'])
     matches = iter_da_between_groups((heter_male + bi_male), (heter_m_id + bi_m_id), (heter_female + bi_female), (heter_f_id + bi_f_id), (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     # matches = iter_da_between_groups((heter_female + bi_female), (heter_f_id + bi_f_id), (heter_male + bi_male), (heter_m_id + bi_m_id), (overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for heterosexual males & females..."
+    print colored("Computing matchings for heterosexual males & females...", 'magenta', attrs=['bold'])
     matches = iter_da_between_groups(heter_male, heter_m_id, heter_female, heter_f_id, (overall_target_min * mixing_ratio), matches, all_users_ids)
     # matches = iter_da_between_groups(heter_female, heter_f_id, heter_male, heter_m_id, (overall_target_min * mixing_ratio), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
@@ -332,8 +333,9 @@ def run_iter_da_for_all():
     # create ranked list for each person by sorting their matches
     user.sort_all_match_lists(matches, users_dict)
     # check on how many matches people actually have
+    print colored("Matching completed!", 'red', 'on_green', attrs=['bold'])
     user.analyze_num_matches(matches, users_dict)
-    
+
     compatible_sizes = [
         [
             len(homo_male) + len(bi_male),
@@ -348,9 +350,9 @@ def run_iter_da_for_all():
     ]
 
     for i in range(1, 4, 1):
-        print '#####################################'
+        print '\033[95m#####################################'
         print 'TOP %s MATCHES' % i
-        print '#####################################'
+        print '#####################################\033[0m'
         #check the utility values from rank perspective and distance perspective -- in two separate functions
         user.analyze_rank_utility(matches, users_dict, compatible_sizes, i)
         user.analyze_distance_utility(matches, users_dict, i)

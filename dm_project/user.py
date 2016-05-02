@@ -48,10 +48,10 @@ class User(object):
 
     # is compatible with other user?
     def is_compatibile(self, u):
-        self_likes = (u.gender == 0 and (self.seeking == 0 or self.seeking == 2) or
-                     (u.gender == 1 and (self.seeking == 1 or self.seeking == 2)
-        u_likes = (self.gender == 0 and (u.seeking == 0 or u.seeking == 2) or
-                  (self.gender == 1 and (u.seeking == 1 or u.seeking == 2)
+        self_likes = ((u.gender == 0 and (self.seeking == 0 or self.seeking == 2)) or
+                     (u.gender == 1 and (self.seeking == 1 or self.seeking == 2)))
+        u_likes = ((self.gender == 0 and (u.seeking == 0 or u.seeking == 2)) or
+                  (self.gender == 1 and (u.seeking == 1 or u.seeking == 2)))
         return self_likes and u_likes
 
 # generate and return n random users
@@ -83,6 +83,7 @@ def calc_prefs(users, save=True, compatible_only=False):
         # print distances_and_ids
         u1.prefs = [u[0] for u in distances_and_ids]
         print 'Loaded prefs for user %d: %s ....' % (u1.id, u1.prefs[0:5])
+    print colored("Calculated all preferences!", 'green', attrs=['bold'])
     if save:
         outfile = raw_input("Filename to save to prefs to?:")
         f = open(outfile, 'w')
@@ -163,8 +164,9 @@ def load_prefs(users, filename):
             u_index -= 1
         prefs = map((int), id_and_prefs[1:])
         users[u_index].prefs = prefs
-        print "loaded preferences for user %d" % u_id
+        print "\rloaded preferences for user %d" % u_id,
     f.close()
+    print colored("Loaded all preferences!", 'green', attrs=['bold'])
     return users
 
 
@@ -195,8 +197,9 @@ def sort_all_match_lists(matches, users_dict):
 # returns dict of num matches histograms
 def analyze_num_matches(matches, users_dict):
     num_matches = {}
-    for g in User.genders:
-        for s in User.seekings:
+    for s in User.seekings:
+        num_matches[s] = {}
+        for g in User.genders:
             num_matches[s][g] = []
 
     for u_id in matches:
@@ -204,29 +207,29 @@ def analyze_num_matches(matches, users_dict):
         num_matches[u.seeking][u.gender].append(len(matches[u_id]))
 
     # print out mean, freq list for all match groups
-    print '\033[95m' + 'Min, mean, max number of matches' + '\033[0m'
-    print (colored("Homo males: ", 'green') + ", " +
+    print colored('Mean, freq list of matches:', 'green', attrs=['bold'])
+    print (colored("Homo males: ", 'cyan') + ", " +
            str(np.asarray(num_matches[0][0]).mean()) + ", " +
-           str({x:a.count(x) for x in num_matches[0][0]}))
-    print (colored("Homo females: ", 'green') + ", " +
+           str({x:num_matches[0][0].count(x) for x in num_matches[0][0]}))
+    print (colored("Homo females: ", 'cyan') + ", " +
            str(np.asarray(num_matches[1][1]).mean()) + ", " +
-           str({x:a.count(x) for x in num_matches[1][1]}))
-    print (colored("Bi males: ", 'green') + ", " +
+           str({x:num_matches[1][1].count(x) for x in num_matches[1][1]}))
+    print (colored("Bi males: ", 'cyan') + ", " +
            str(np.asarray(num_matches[2][0]).mean()) + ", " +
-           str({x:a.count(x) for x in num_matches[2][0]}))
-    print (colored("Bi females: ", 'green') + ", " +
+           str({x:num_matches[2][0].count(x) for x in num_matches[2][0]}))
+    print (colored("Bi females: ", 'cyan') + ", " +
            str(np.asarray(num_matches[2][1]).mean()) + ", " +
-           str({x:a.count(x) for x in num_matches[2][1]}))
-    print (colored("Hetero males: ", 'green') + ", " +
+           str({x:num_matches[2][1].count(x) for x in num_matches[2][1]}))
+    print (colored("Hetero males: ", 'cyan') + ", " +
            str(np.asarray(num_matches[1][0]).mean()) + ", " +
-           str({x:a.count(x) for x in num_matches[1][0]}))
-    print (colored("Hetero females: ", 'green') + ", " +
+           str({x:num_matches[1][0].count(x) for x in num_matches[1][0]}))
+    print (colored("Hetero females: ", 'cyan') + ", " +
            str(np.asarray(num_matches[0][1]).mean()) + ", " +
-           str({x:a.count(x) for x in num_matches[0][1]}))
+           str({x:num_matches[0][0].count(x) for x in num_matches[0][1]}))
 
     return num_matches
 
-def analyze_rank_utility(matches, users_dict):
+def analyze_rank_utility(matches, users_dict, compatible_sizes, k):
     utilities = []
     for u_id in matches:
         u = users_dict[u_id]
