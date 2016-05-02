@@ -26,13 +26,13 @@ class User(object):
         self.prefs = prefs
         self.temp_prefs = None # used in many-to-many and Iterated DA
         self.temp_pref_ranks = None # used in many-to-many DA
-        self.prop_pos = 0 #used in Iterated DA: next person to propose to (for proposing side)
-        self.current_match = None #used in Iterated DA
+        self.prop_pos = 0 # used in Iterated DA: next person to propose to (for proposing side)
+        self.current_match = None # used in Iterated DA
         self.match_list = [] # used in many-to-many DA
-        self.rec_rank = None #used in Iterated DA: rank in temp_prefs for current_match (for recieving side)
-        self.matches_needed = None #used in Iterated DA
+        self.rec_rank = None # used in Iterated DA: rank in temp_prefs for current_match (for receiving side)
+        self.matches_needed = None # used in Iterated DA
         self.quota = None # used in many-to-many DA
-        self.dropped_out = False #used in Iterated DA (between_groups version)
+        self.dropped_out = False # used in Iterated DA (between_groups version)
 
     def __str__(self):
         return "id: %d, features: %s, gender: %d, seeking: %d, prefs: %s" % (
@@ -229,12 +229,17 @@ def analyze_num_matches(matches, users_dict):
 def analyze_rank_utility(matches, users_dict):
     utilities = []
     for u_id in matches:
+        u = users_dict[u_id]
         this_utility = []
+        count = 0
         for v_id in matches[u_id]:
-            this_utility.append(users_dict[u_id].prefs.index(v_id) + 1)
-        utilities.append(np.asarray(this_utility).mean())
+            this_utility.append((users_dict[u_id].prefs.index(v_id) + 1) / compatible_sizes[u.gender][u.seeking])
+            count += 1
+            if count >= k:
+                break
+        utilities.append(np.mean(this_utility))
     print "Min average rank: " + str(min(utilities))
-    print "Mean average rank: " + str(np.asarray(utilities).mean())
+    print "Mean average rank: " + str(np.mean(utilities))
     print "Max average rank: " + str(max(utilities))
 
     # compute only for heterosexual males (to compare differences between two sides proposing)
@@ -243,12 +248,16 @@ def analyze_rank_utility(matches, users_dict):
         if (users_dict[u_id].gender != 0) or (users_dict[u_id].seeking != 1):
             continue
         this_utility = []
+        count = 0
         for v_id in matches[u_id]:
-            this_utility.append(users_dict[u_id].prefs.index(v_id) + 1)
-        utilities.append(np.asarray(this_utility).mean())
+            this_utility.append((users_dict[u_id].prefs.index(v_id) + 1) / compatible_sizes[u.gender][u.seeking])
+            count += 1
+            if count >= k:
+                break
+        utilities.append(np.mean(this_utility))
     print "And for heterosexual males only:"
     print "Min average rank: " + str(min(utilities))
-    print "Mean average rank: " + str(np.asarray(utilities).mean())
+    print "Mean average rank: " + str(np.mean(utilities))
     print "Max average rank: " + str(max(utilities))
 
     # compute only for heterosexual females (to compare differences between two sides proposing)
@@ -257,24 +266,32 @@ def analyze_rank_utility(matches, users_dict):
         if (users_dict[u_id].gender != 1) or (users_dict[u_id].seeking != 0):
             continue
         this_utility = []
+        count = 0
         for v_id in matches[u_id]:
-            this_utility.append(users_dict[u_id].prefs.index(v_id) + 1)
-        utilities.append(np.asarray(this_utility).mean())
+            this_utility.append((users_dict[u_id].prefs.index(v_id) + 1) / compatible_sizes[u.gender][u.seeking])
+            count += 1
+            if count >= k:
+                break
+        utilities.append(np.mean(this_utility))
     print "And for heterosexual females only:"
     print "Min average rank: " + str(min(utilities))
-    print "Mean average rank: " + str(np.asarray(utilities).mean())
+    print "Mean average rank: " + str(np.mean(utilities))
     print "Max average rank: " + str(max(utilities))
 
-
-def analyze_distance_utility(matches, users_dict):
+def analyze_distance_utility(matches, users_dict, k):
     utilities = []
     for u_id in matches:
         this_utility = []
+        count = 0
         for v_id in matches[u_id]:
             this_utility.append(users_dict[u_id].dist(users_dict[v_id]))
-        utilities.append(np.asarray(this_utility).mean())
+            count += 1
+            if count >= k:
+                break
+
+        utilities.append(np.mean(this_utility))
     print "Min average distance: " + str(min(utilities))
-    print "Mean average distance: " + str(np.asarray(utilities).mean())
+    print "Mean average distance: " + str(np.mean(utilities))
     print "Max average distance: " + str(max(utilities))
 
     # compute only for heterosexual males (to compare differences between two sides proposing)
@@ -283,12 +300,16 @@ def analyze_distance_utility(matches, users_dict):
         if (users_dict[u_id].gender != 0) or (users_dict[u_id].seeking != 1):
             continue
         this_utility = []
+        count = 0
         for v_id in matches[u_id]:
             this_utility.append(users_dict[u_id].dist(users_dict[v_id]))
-        utilities.append(np.asarray(this_utility).mean())
+            count += 1
+            if count >= k:
+                break
+        utilities.append(np.mean(this_utility))
     print "And for heterosexual males only:"
     print "Min average distance: " + str(min(utilities))
-    print "Mean average distance: " + str(np.asarray(utilities).mean())
+    print "Mean average distance: " + str(np.mean(utilities))
     print "Max average distance: " + str(max(utilities))
 
     # compute only for heterosexual females (to compare differences between two sides proposing)
@@ -297,12 +318,16 @@ def analyze_distance_utility(matches, users_dict):
         if (users_dict[u_id].gender != 1) or (users_dict[u_id].seeking != 0):
             continue
         this_utility = []
+        count = 0
         for v_id in matches[u_id]:
             this_utility.append(users_dict[u_id].dist(users_dict[v_id]))
-        utilities.append(np.asarray(this_utility).mean())
+            count += 1
+            if count >= k:
+                break
+        utilities.append(np.mean(this_utility))
     print "And for heterosexual females only:"
     print "Min average distance: " + str(min(utilities))
-    print "Mean average distance: " + str(np.asarray(utilities).mean())
+    print "Mean average distance: " + str(np.mean(utilities))
     print "Max average distance: " + str(max(utilities))
 
 # could add utility for just the top match instead of average over all matches
