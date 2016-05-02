@@ -96,11 +96,6 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
     propose_dict = user.map_users_list_to_dict(propose)
     receive_dict = user.map_users_list_to_dict(receive)
 
-    #WEIRD SPECIAL CASE IDK
-    #receive_dict[283].prefs.append(484)
-    #receive_dict[1642].prefs.append(484)
-    #receive_dict[151].prefs.append(484)
-
     #precompute whether each user is within propose and/or receive group
     prop_dict = {}
     for u_id in all_users_ids:
@@ -135,8 +130,6 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
         larger = receive #shallow copy
         smaller = propose #shallow copy
         propose_is_larger = False
-    #larger_size = max(len(propose_ids), len(receive_ids))
-    #smaller_size = min(len(propose_ids), len(receive_ids))
 
     #assign number of matches before dropping out
     for u in larger:
@@ -158,17 +151,11 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
                     while True:
                         target_id = u.temp_prefs[u.prop_pos]
 
-                        #if u.id == 16:
-                            #print target_id
-
                         if target_id == 0:
                         #not getting matched this round
                             u.current_match = 0
                             break
                         u.prop_pos += 1
-
-                        #if u.id == 16:
-                            #print u.prop_pos
 
                         if not receive_dict[target_id].dropped_out:
                             #found a valid target id
@@ -208,10 +195,6 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
                     matches[u.id].append(u.current_match)
                     if propose_is_larger:
                         u.matches_needed -= 1
-                #print u.id
-                #print u.temp_prefs
-                #print u.current_match
-                #print u.prop_pos
                 if u.current_match is not None:
                     u.temp_prefs.remove(u.current_match)
             u.prop_pos = 0
@@ -240,22 +223,14 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
 
     return matches
 
-# return matches on all users
-# just dummy code for now
+
 def run_iter_da_for_all():
-    # users = user.gen_users(10)
-    # users = user.add_prefs(users)
     users = user.load_users('anon_data_2016.txt')
     users = user.load_features(users, 'features_2016.txt')
-    # users = user.calc_prefs(users)
     users = user.load_prefs(users, 'preferences_2016.txt')
 
     users_dict = user.map_users_list_to_dict(users)
     all_users_ids = users_dict.keys()
-
-    #print "id: %d, prefs: %s" % (users[0].id, users[0].prefs[0:10])
-    #for u in users[0].prefs[0:40]:
-    #    print "id: %d, dist: %s" % (u, users[0].dist(users_dict[u]))
 
     #define parameters
     overall_target_min = 10
@@ -315,7 +290,6 @@ def run_iter_da_for_all():
     #heter_female = heter_female[:150]
     #heter_m_id = heter_m_id[:100]
     #heter_f_id = heter_f_id[:150]
-
 
     #call the iterated DA functions in 6 stages
     print "Computing matchings for homosexual & bisexual males..."

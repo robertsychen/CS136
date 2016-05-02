@@ -23,14 +23,13 @@ def analyze_2016_algo():
 
     users_dict = user.map_users_list_to_dict(users)
 
+    #deal with yucky special case
     matches = format_2016_matches('matches_2016.txt')
     for u_id in matches:
         if (3148 in matches[u_id]):
             matches[u_id].remove(3148)
-
     del matches[3148]
 
-    #user.sort_all_match_lists(matches, users_dict)
 
     #check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
@@ -42,5 +41,4 @@ def analyze_2016_algo():
 analyze_2016_algo()
 
 
-#NOTE: need to write function to compute utility for matches_2016.txt
-#be sure to normalize in some appropriate way as far as diff. # of matches in our methods vs. 2016 method
+#NOTE: either match up the # of matches well or else be sure to normalize in some appropriate way as far as diff. # of matches in our methods vs. 2016 method
