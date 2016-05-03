@@ -20,6 +20,7 @@ def analyze_2016_algo():
     users = user.load_users('anon_data_2016.txt')
     users = user.load_features(users, 'features_2016.txt')
     users = user.load_prefs(users, 'preferences_2016.txt')
+    users = user.filter_prefs(users)
 
     users_dict = user.map_users_list_to_dict(users)
 
@@ -30,14 +31,18 @@ def analyze_2016_algo():
 
     del matches[3148]
 
-    # user.sort_all_match_lists(matches, users_dict)
+    user.sort_all_match_lists(matches, users_dict)
 
     # check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
 
-    # check the utility values from rank perspective and distance perspective
-    user.analyze_rank_utility(matches, users_dict)
-    user.analyze_distance_utility(matches, users_dict)
+    for i in range(1, 4, 1):
+        print '\033[95m#####################################'
+        print 'TOP %s MATCHES' % i
+        print '#####################################\033[0m'
+        #check the utility values from rank perspective and distance perspective -- in two separate functions
+        user.analyze_rank_utility(matches, users_dict, i)
+        user.analyze_distance_utility(matches, users_dict, i)
 
 analyze_2016_algo()
 
