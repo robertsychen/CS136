@@ -82,7 +82,7 @@ def calc_prefs(users, save=True, compatible_only=False):
         distances_and_ids.sort(key=itemgetter(1))
         # print distances_and_ids
         u1.prefs = [u[0] for u in distances_and_ids]
-        print 'Loaded prefs for user %d: %s ....' % (u1.id, u1.prefs[0:5])
+        print '\rCalculated prefs for user %d: %s ....' % (u1.id, u1.prefs[0:5]),
     print colored("Calculated all preferences!", 'green', attrs=['bold'])
     if save:
         outfile = raw_input("Filename to save to prefs to?:")
@@ -208,24 +208,24 @@ def analyze_num_matches(matches, users_dict):
 
     # print out mean, freq list for all match groups
     print colored('Mean, freq list of matches:', 'green', attrs=['bold'])
-    print (colored("Homo males: ", 'cyan') + ", " +
+    print (colored("Homo males: ", 'cyan') +
            str(np.asarray(num_matches[0][0]).mean()) + ", " +
            str({x:num_matches[0][0].count(x) for x in num_matches[0][0]}))
-    print (colored("Homo females: ", 'cyan') + ", " +
+    print (colored("Homo females: ", 'cyan') +
            str(np.asarray(num_matches[1][1]).mean()) + ", " +
            str({x:num_matches[1][1].count(x) for x in num_matches[1][1]}))
-    print (colored("Bi males: ", 'cyan') + ", " +
+    print (colored("Bi males: ", 'cyan') +
            str(np.asarray(num_matches[2][0]).mean()) + ", " +
            str({x:num_matches[2][0].count(x) for x in num_matches[2][0]}))
-    print (colored("Bi females: ", 'cyan') + ", " +
+    print (colored("Bi females: ", 'cyan') +
            str(np.asarray(num_matches[2][1]).mean()) + ", " +
            str({x:num_matches[2][1].count(x) for x in num_matches[2][1]}))
-    print (colored("Hetero males: ", 'cyan') + ", " +
+    print (colored("Hetero males: ", 'cyan') +
            str(np.asarray(num_matches[1][0]).mean()) + ", " +
            str({x:num_matches[1][0].count(x) for x in num_matches[1][0]}))
-    print (colored("Hetero females: ", 'cyan') + ", " +
+    print (colored("Hetero females: ", 'cyan') +
            str(np.asarray(num_matches[0][1]).mean()) + ", " +
-           str({x:num_matches[0][0].count(x) for x in num_matches[0][1]}))
+           str({x:num_matches[0][1].count(x) for x in num_matches[0][1]}))
 
     return num_matches
 
