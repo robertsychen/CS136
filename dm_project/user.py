@@ -31,9 +31,9 @@ class User(object):
         self.current_match = None # used in Iterated DA
         self.match_list = [] # used in many-to-many DA
         self.rec_rank = None # used in Iterated DA: rank in temp_prefs for current_match (for receiving side)
-        self.matches_needed = None # used in Iterated DA
+        self.matches_obtained = None # used in Iterated DA
         self.quota = None # used in many-to-many DA
-        self.dropped_out = False # used in Iterated DA (between_groups version)
+        self.dropped_out = False # used in Iterated DA
 
     def __str__(self):
         return "id: %d, features: %s, gender: %d, seeking: %d, prefs: %s" % (
