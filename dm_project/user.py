@@ -53,7 +53,7 @@ class User(object):
                      (u.gender == 1 and (self.seeking == 1 or self.seeking == 2)))
         u_likes = ((self.gender == 0 and (u.seeking == 0 or u.seeking == 2)) or
                   (self.gender == 1 and (u.seeking == 1 or u.seeking == 2)))
-        return self_likes and u_likes
+        return (self_likes and u_likes)
 
 # generate and return n random users
 # no preference ordering yet
