@@ -31,7 +31,7 @@ def mtm_da_within_group(people, people_ids, target_min, matches, all_users_ids):
     propose = receive = copy.deepcopy(people)
     propose_dict = user.map_users_list_to_dict(propose)
     receive_dict = user.map_users_list_to_dict(receive)
-        
+
     while True:
         # proposal phase
         for u in propose:
@@ -39,21 +39,21 @@ def mtm_da_within_group(people, people_ids, target_min, matches, all_users_ids):
             while len(u.match_list) < target_min and u.prop_pos < len(u.temp_prefs):
                 receiver_id = u.temp_prefs[u.prop_pos]
                 receiver = receive_dict[receiver_id]
-                    
+
                 r_rank = u.temp_pref_ranks[receiver_id]
                 elem = (r_rank, receiver_id)
                 if elem not in u.match_list:
                     # insert in sorted order
                     bisect.insort_left(u.match_list, elem)
-                
+
                 u.prop_pos += 1
-                
+
                 u_rank = receiver.temp_pref_ranks[u.id]
                 elem = (u_rank, u.id)
                 if elem not in receiver.match_list:
                     # insert in sorted order
                     bisect.insort_left(receiver.match_list, elem)
-                
+
         # accept/reject phase
         for u in receive:
             # reject until match list size is within quota
@@ -61,26 +61,26 @@ def mtm_da_within_group(people, people_ids, target_min, matches, all_users_ids):
                 # remove last element from match list
                 rank, proposer_id = u.match_list.pop()
                 proposer = propose_dict[proposer_id]
-                
+
                 # unmatch user
                 u_rank = proposer.temp_pref_ranks[u.id]
                 proposer.match_list.remove((u_rank, u.id))
-                
+
         # check if finished
         finished = True
         for u in propose:
             if len(u.match_list) < target_min and u.prop_pos < len(u.temp_prefs):
                 finished = False
                 break
-                
+
         if finished:
             # end the algorithm
             break
-        
+
     for u in receive:
         for rank, id in u.match_list:
             matches[u.id].add(id)
-    
+
     return matches
 
 def mtm_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_min, matches, all_users_ids):
@@ -106,7 +106,7 @@ def mtm_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_m
         for user_id in u.prefs:
             if rec_dict[user_id]:
                 u.temp_prefs.append(user_id)
-    
+
     for u in receive:
         u.temp_prefs = []
         u.temp_pref_ranks = {}
@@ -128,16 +128,16 @@ def mtm_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_m
     #assign quotas for each side
     for u in larger:
         u.quota = target_min
-    
+
     quota = int(math.floor(target_min * len(larger) / len(smaller)))
     for u in smaller:
         u.quota = quota
-        
+
     # randomly distribute the difference between the two sides
     difference = target_min * len(larger) - quota * len(smaller)
     for u in random.sample(smaller, difference):
         u.quota += 1
-        
+
     while True:
         # proposal phase
         for u in propose:
@@ -145,14 +145,14 @@ def mtm_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_m
             while len(u.match_list) < u.quota and u.prop_pos < len(u.temp_prefs):
                 receiver_id = u.temp_prefs[u.prop_pos]
                 receiver = receive_dict[receiver_id]
-                    
+
                 u.match_list.append(receiver_id)
                 u.prop_pos += 1
-                
+
                 u_rank = receiver.temp_pref_ranks[u.id]
                 # insert in sorted order
                 bisect.insort_left(receiver.match_list, (u_rank, u.id))
-                
+
         # accept/reject phase
         for u in receive:
             # reject until match list size is within quota
@@ -160,40 +160,51 @@ def mtm_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_m
                 # remove last element from match list
                 rank, proposer_id = u.match_list.pop()
                 proposer = propose_dict[proposer_id]
-                
+
                 # unmatch user
                 proposer.match_list.remove(u.id)
-                
+
         # check if finished
         finished = True
         for u in propose:
             if len(u.match_list) < u.quota and u.prop_pos < len(u.temp_prefs):
                 finished = False
                 break
-                
+
         if finished:
             # end the algorithm
             break
-                
+
     for u in propose:
         matches[u.id].update(u.match_list)
-        
+
     for u in receive:
         for rank, id in u.match_list:
             matches[u.id].add(id)
-    
+
     return matches
 
 # return matches on all users
 # just dummy code for now
 def run_mtm_da_for_all():
-    # users = user.gen_users(10)
-    # users = user.add_prefs(users)
-    users = user.load_users('anon_data_2016.txt')
-    users = user.load_features(users, 'features_2016.txt')
-    # users = user.calc_prefs(users)
-    users = user.load_prefs(users, 'preferences_2016.txt')
+
+    # random users...
+    # users = user.gen_users(500)
+    # users = user.calc_prefs(users, save=False)
+    # users = user.filter_prefs(users)
+
+    # saved random users...
+    users = user.load_users('random_data_1500.txt')
+    users = user.load_features(users, 'random_features_1500.txt')
+    users = user.load_prefs(users, 'random_prefs_1500.txt')
     users = user.filter_prefs(users)
+
+    # or actual users...?
+    # users = user.load_users('anon_data_2016.txt')
+    # users = user.load_features(users, 'features_2016.txt')
+    # users = user.load_prefs(users, 'preferences_2016.txt')
+    # users = user.filter_prefs(users)
+
 
     users_dict = user.map_users_list_to_dict(users)
     all_users_ids = users_dict.keys()
@@ -221,7 +232,7 @@ def run_mtm_da_for_all():
     heter_m_id = []
     heter_f_id = []
     bi_m_id = []
-    bi_f_id = [] 
+    bi_f_id = []
     for u in users:
 
         matches[u.id] = set()
@@ -265,30 +276,22 @@ def run_mtm_da_for_all():
     #call the iterated DA functions in 6 stages
     print colored("Computing matchings for homosexual & bisexual males...", 'magenta', attrs=['bold'])
     matches = mtm_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), int(overall_target_min * mixing_ratio), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print colored("Computing matchings for homosexual & bisexual females...", 'magenta', attrs=['bold'])
     matches = mtm_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), int(overall_target_min * mixing_ratio), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print colored("Computing matchings for homosexual males...", 'magenta', attrs=['bold'])
     matches = mtm_da_within_group(homo_male, homo_m_id, int(overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print colored("Computing matchings for homosexual females...", 'magenta', attrs=['bold'])
     matches = mtm_da_within_group(homo_female, homo_f_id, int(overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print colored("Computing matchings for bisexual & heterosexual males & females...", 'magenta', attrs=['bold'])
     matches = mtm_da_between_groups((heter_male + bi_male), (heter_m_id + bi_m_id), (heter_female + bi_female), (heter_f_id + bi_f_id), int(overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     # matches = mtm_da_between_groups((heter_female + bi_female), (heter_f_id + bi_f_id), (heter_male + bi_male), (heter_m_id + bi_m_id), int(overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print colored("Computing matchings for heterosexual males & females...", 'magenta', attrs=['bold'])
     matches = mtm_da_between_groups(heter_male, heter_m_id, heter_female, heter_f_id, int(overall_target_min * mixing_ratio), matches, all_users_ids)
     # matches = mtm_da_between_groups(heter_female, heter_f_id, heter_male, heter_m_id, int(overall_target_min * mixing_ratio), matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
 
     #create ranked list for each person by sorting their matches
     user.sort_all_match_lists(matches, users_dict)
-    
     print colored("Matching completed!", 'red', 'on_green', attrs=['bold'])
-
     #check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
 

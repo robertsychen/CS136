@@ -144,7 +144,7 @@ def load_features(users, filename):
             if users[u_index].id == u_id:
                 break
             u_index -= 1
-        features = map((float), id_and_features[1:-1])
+        features = map((float), id_and_features[1:])
         users[u_index].features = features
     f.close()
     return users

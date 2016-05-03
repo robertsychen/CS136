@@ -284,11 +284,17 @@ def run_iter_da_for_all():
     # users = user.calc_prefs(users, save=False)
     # users = user.filter_prefs(users)
 
-    # or actual users...?
-    users = user.load_users('anon_data_2016.txt')
-    users = user.load_features(users, 'features_2016.txt')
-    users = user.load_prefs(users, 'preferences_2016.txt')
+    # saved random users...
+    users = user.load_users('random_data_1500.txt')
+    users = user.load_features(users, 'random_features_1500.txt')
+    users = user.load_prefs(users, 'random_prefs_1500.txt')
     users = user.filter_prefs(users)
+
+    # or actual users...?
+    # users = user.load_users('anon_data_2016.txt')
+    # users = user.load_features(users, 'features_2016.txt')
+    # users = user.load_prefs(users, 'preferences_2016.txt')
+    # users = user.filter_prefs(users)
 
     users_dict = user.map_users_list_to_dict(users)
     all_users_ids = users_dict.keys()
@@ -302,18 +308,9 @@ def run_iter_da_for_all():
     # (These approximately translate to lower bounds on # matches overall)
 
     dropout_female_factor = 1.2 # scalar multiple to set diff. btwn. female min & max # of matches in between groups algo
-    dropout_male_factor = 14.0 # scalar multiple to set diff. btwn. male min & max # of matches in between groups algo
+    dropout_male_factor = 18.0 # scalar multiple to set diff. btwn. male min & max # of matches in between groups algo
     dropout_within_group_factor = 1.3 # scalar multiple to set diff. btwn. min & max # of matches in within groups algo
     # (max # of matches <=> user dropping out in the algo)
-
-    # overall_female_min = 4
-    # overall_male_min = 4
-    # overall_within_group_min = 5
-    #
-    # dropout_female_factor = 10
-    # dropout_male_factor = 10
-    # dropout_within_group_factor = 5
-
 
     '''
     GROUPING

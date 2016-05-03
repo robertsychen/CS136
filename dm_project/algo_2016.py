@@ -22,22 +22,36 @@ def format_2016_matches(filename):
     return matches
 
 def analyze_2016_algo():
-    users = user.load_users('anon_data_2016.txt')
-    users = user.load_features(users, 'features_2016.txt')
-    users = user.load_prefs(users, 'preferences_2016.txt')
+
+    # real users
+    # users = user.load_users('anon_data_2016.txt')
+    # users = user.load_features(users, 'features_2016.txt')
+    # users = user.load_prefs(users, 'preferences_2016.txt')
+    # users = user.filter_prefs(users)
+    #
+    # users_dict = user.map_users_list_to_dict(users)
+    #
+    # matches = format_2016_matches('matches_2016.txt')
+    # for u_id in matches:
+    #     if (3148 in matches[u_id]):
+    #         matches[u_id].remove(3148)
+    #
+    # del matches[3148]
+
+    # or saved random users
+    users = user.load_users('random_data_1500.txt')
+    users = user.load_features(users, 'random_features_1500.txt')
+    users = user.load_prefs(users, 'random_prefs_1500.txt')
     users = user.filter_prefs(users)
-
     users_dict = user.map_users_list_to_dict(users)
+    matches = format_2016_matches('ip_matches_1500_real_False.txt')
 
-    matches = format_2016_matches('matches_2016.txt')
-    for u_id in matches:
-        if (3148 in matches[u_id]):
-            matches[u_id].remove(3148)
-
-    del matches[3148]
+    # double check that we have a valid match set
+    for u in matches.keys():
+        for m in matches[u]:
+            assert(users_dict[u].is_compatibile(users_dict[m]))
 
     user.sort_all_match_lists(matches, users_dict)
-
     # check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
 
@@ -52,5 +66,5 @@ def analyze_2016_algo():
 analyze_2016_algo()
 
 
-# NOTE: need to write function to compute utility for matches_2016.txt
+# note: need to write function to compute utility for matches_2016.txt
 # be sure to normalize in some appropriate way as far as diff. # of matches in our methods vs. 2016 method
