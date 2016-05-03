@@ -1,12 +1,15 @@
 import re
 import user
 from user import User
+from termcolor import colored, cprint
 
 # take 2016 matches txt file and convert into data structure for matches: dictionary of users' ids & ranked list of ids of their matches
 def format_2016_matches(filename):
     matches = {}
     f = open(filename)
+    line_num = 0
     for line in f:
+        print "\rLoading match line %d" % line_num,
         match_info = re.split(':|,', line)
         this_id = int(match_info[0])
         this_matches = []
@@ -14,6 +17,8 @@ def format_2016_matches(filename):
             if i % 2 == 1:
                 this_matches.append(int(match_info[i]))
         matches[this_id] = this_matches
+        line_num += 1
+    print colored("Loaded all matches!", 'green', attrs=['bold'])
     return matches
 
 def analyze_2016_algo():

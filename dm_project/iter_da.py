@@ -248,13 +248,14 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
 # return matches on all users
 def run_iter_da_for_all():
 
-    # random users or actual datamatch users?
+    # random users...
     # users = user.gen_users(1000)
-    # users = user.add_prefs(users)
+    # users = user.calc_prefs(users)
+    # users = user.filter_prefs(users)
+
+    # or actual users...?
     users = user.load_users('anon_data_2016.txt')
     users = user.load_features(users, 'features_2016.txt')
-    # if no prefs exist yet, calculate; otherwise, load
-    # users = user.calc_prefs(users)
     users = user.load_prefs(users, 'preferences_2016.txt')
     users = user.filter_prefs(users)
 
@@ -317,14 +318,14 @@ def run_iter_da_for_all():
                 bi_female.append(u)
                 bi_f_id.append(u.id)
 
-    
+
     #print len(homo_m_id)
     #print len(bi_m_id)
     #print len(homo_f_id)
     #print len(bi_f_id)
     #print len(heter_m_id)
     #print len(heter_f_id)
-    
+
 
     # temporarily truncate for test reasons
     #heter_male = heter_male[:163]
@@ -367,9 +368,9 @@ def run_iter_da_for_all():
 
     # create ranked list for each person by sorting their matches
     user.sort_all_match_lists(matches, users_dict)
-    
+
     print colored("Matching completed!", 'red', 'on_green', attrs=['bold'])
-    
+
     # check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
 

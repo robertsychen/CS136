@@ -167,7 +167,7 @@ def load_prefs(users, filename):
         users[u_index].prefs = prefs
         print "\rLoaded preferences for user %d" % u_id,
     f.close()
-    print colored("\nLoaded all preferences!", 'green', attrs=['bold'])
+    print colored("Loaded all preferences!", 'green', attrs=['bold'])
     return users
 
 
@@ -178,11 +178,13 @@ def map_users_list_to_dict(users):
     for u in users:
         users_dict[u.id] = u
     return users_dict
-    
+
 def filter_prefs(users):
     users_dict = map_users_list_to_dict(users)
     for u in users:
+        print "\rFiltering prefs for user %d" % u.id,
         u.prefs = filter(lambda x: u.is_compatibile(users_dict[x]), u.prefs)
+    print colored("Filtering prefs done!", 'green', attrs=['bold'])
     return users
 
 # takes dictionary of matches (with key = id, value = unsorted list of matches)
@@ -214,9 +216,15 @@ def analyze_num_matches(matches, users_dict):
         num_matches[u.seeking][u.gender].append(len(matches[u_id]))
 
     def matches_str(seeking, gender):
-        return str(np.asarray(num_matches[seeking][gender]).mean()) + ", " + \
-            str({x: num_matches[seeking][gender].count(x) for x in set(num_matches[seeking][gender])})
-        
+        comb_num_matches = []
+        seeking_array = [seeking] if isinstance( seeking, int ) else seeking
+        gender_array = [gender] if isinstance( gender, int ) else gender
+        for i in seeking_array:
+            for j in gender_array:
+                comb_num_matches += num_matches[i][j]
+        return str(np.asarray(comb_num_matches).mean()) + ", " + \
+            str({x: comb_num_matches.count(x) for x in set(comb_num_matches)})
+
     # print out mean, freq list for all match groups
     print colored('Mean, freq list of matches:', 'green', attrs=['bold'])
     print colored("Homo males: ", 'cyan') + matches_str(0, 0)
@@ -225,10 +233,16 @@ def analyze_num_matches(matches, users_dict):
     print colored("Bi females: ", 'cyan') + matches_str(2, 1)
     print colored("Hetero males: ", 'cyan') + matches_str(1, 0)
     print colored("Hetero females: ", 'cyan') + matches_str(0, 1)
+    print colored("All males: ", 'cyan') + matches_str([0, 1, 2], 0)
+    print colored("All females: ", 'cyan') + matches_str([0, 1, 2], 1)
+    print colored("All people: ", 'cyan') + matches_str([0, 1, 2], 1)
 
     return num_matches
 
 def analyze_rank_utility(matches, users_dict, k):
+
+    print colored("Rank values:", 'cyan', attrs=['bold'])
+
     utilities = []
     for u_id in matches:
         prefs = users_dict[u_id].prefs
@@ -240,9 +254,9 @@ def analyze_rank_utility(matches, users_dict, k):
             if count >= k:
                 break
         utilities.append(np.mean(this_utility))
-    print "Min average rank: " + str(min(utilities))
-    print "Mean average rank: " + str(np.mean(utilities))
-    print "Max average rank: " + str(max(utilities))
+    print colored('For all users:', 'cyan')
+    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(min(utilities)),
+        str(np.mean(utilities), str(max(utilities))))
 
     # compute only for heterosexual males (to compare differences between two sides proposing)
     utilities = []
@@ -259,9 +273,8 @@ def analyze_rank_utility(matches, users_dict, k):
                 break
         utilities.append(np.mean(this_utility))
     print "And for heterosexual males only:"
-    print "Min average rank: " + str(min(utilities))
-    print "Mean average rank: " + str(np.mean(utilities))
-    print "Max average rank: " + str(max(utilities))
+    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(min(utilities)),
+        str(np.mean(utilities), str(max(utilities))))
 
     # compute only for heterosexual females (to compare differences between two sides proposing)
     utilities = []
