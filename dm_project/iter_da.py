@@ -1,6 +1,7 @@
 import user
 from user import User
 import copy
+from termcolor import colored, cprint
 
 def iter_da_within_group(people, people_ids, people_min, people_max, matches, all_users_ids):
     # precompute whether each user is within this group of people
@@ -110,7 +111,6 @@ def iter_da_within_group(people, people_ids, people_min, people_max, matches, al
         # flag any users that are dropping out
         need_more_matches = False
         for u in propose:
-            print matches_obtained[u.id]
             if matches_obtained[u.id] < people_min:
                 need_more_matches = True
             elif matches_obtained[u.id] >= people_max:
@@ -148,15 +148,6 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
             if prop_dict[user_id] == True:
                 u.temp_prefs.append(user_id)
         u.temp_prefs.append(0) # represents not getting matched
-
-    # consider relative sizes of propose & receive sides
-    #larger = propose # shallow copy
-    #smaller = receive # shallow copy
-    #propose_is_larger = True
-    #if (len(receive_ids) > len(propose_ids)):
-    #    larger = receive # shallow copy
-    #    smaller = propose # shallow copy
-    #    propose_is_larger = False
 
     # assign number of matches so far
     for u in propose:
@@ -270,16 +261,18 @@ def run_iter_da_for_all():
     users_dict = user.map_users_list_to_dict(users)
     all_users_ids = users_dict.keys()
 
-    # define parameters
-    mixing_ratio = 0.5
+    ########    PARAMETERS    ###############################
+    mixing_ratio = 0.5 # proportion of the matches that come from the different stages
 
-    overall_female_min = 10
-    overall_male_min = 1
-    overall_within_group_min = 10
+    overall_female_min = 10 # overall_female_min * mixing_ratio & overall_female_min * (1-mixing_ratio) are lower bounds on # matches for females in between groups algo
+    overall_male_min = 1 # # overall_male_min * mixing_ratio & overall_male_min * (1-mixing_ratio) are lower bounds on # matches for males in between groups algo
+    overall_within_group_min = 10 # overall_within_group_min * mixing_ratio & overall_within_group_min * (1-mixing_ratio) are lower bounds on # matches for within group algo
+    # (These approximately translate to lower bounds on # matches overall)
 
-    dropout_female_factor = 1.2
-    dropout_male_factor = 18.0
-    dropout_within_group_factor = 1.5
+    dropout_female_factor = 1.2 # scalar multiple to set diff. btwn. female min & max # of matches in between groups algo
+    dropout_male_factor = 18.0 # scalar multiple to set diff. btwn. male min & max # of matches in between groups algo
+    dropout_within_group_factor = 1.5 # scalar multiple to set diff. btwn. min & max # of matches in within groups algo
+    # (max # of matches <=> user dropping out in the algo)
 
     '''
     GROUPING
