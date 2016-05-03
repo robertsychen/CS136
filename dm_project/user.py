@@ -226,7 +226,7 @@ def analyze_num_matches(matches, users_dict):
             str({x: comb_num_matches.count(x) for x in set(comb_num_matches)})
 
     # print out mean, freq list for all match groups
-    print colored('Mean, freq list of matches:', 'green', attrs=['bold'])
+    print colored('Mean, freq list of matches:', 'cyan', attrs=['bold'])
     print colored("Homo males: ", 'cyan') + matches_str(0, 0)
     print colored("Homo females: ", 'cyan') + matches_str(1, 1)
     print colored("Bi males: ", 'cyan') + matches_str(2, 0)
@@ -290,7 +290,7 @@ def analyze_rank_utility(matches, users_dict, k):
             if count >= k:
                 break
         utilities.append(np.mean(this_utility))
-    print colored("And for heterosexual females only:", 'cyan')
+    print colored("And for heterosexual females only:", 'cyan'),
     print "Min av.: %s, mean av.: %s, max av.: %s" % (str(round(min(utilities), 6)),
         str(round(np.mean(utilities), 6)), str(round(max(utilities), 6)))
 

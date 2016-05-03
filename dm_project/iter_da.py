@@ -57,7 +57,7 @@ def iter_da_within_group(people, people_ids, people_min, people_max, matches, al
                             break
                         u.prop_pos += 1
 
-                        if not dropped_out[target_id]:
+                        if (not dropped_out[target_id] and target_id not in matches[u.id]):
                             # found a valid target id
                             break
 
@@ -177,13 +177,12 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
                             break
                         u.prop_pos += 1
 
-                        if not receive_dict[target_id].dropped_out:
+                        if (not receive_dict[target_id].dropped_out and target_id not in matches[u.id]):
                             # found a valid target id
                             break
 
                     if target_id != 0:
                         target = receive_dict[target_id]
-
                         if (target.current_match is None) or (target.temp_prefs.index(u.id) < target.rec_rank):
                             # accept the proposal
                             if target.current_match is not None:
@@ -193,14 +192,15 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
                             target.rec_rank = target.temp_prefs.index(u.id)
 
             # check if any proposers are still unmatched
+            unmatched_props = [u for u in propose if (not u.dropped_out and u.current_match is None)]
             still_unmatched_proposers = False
             for u in propose:
                 if u.dropped_out:
                     continue
-
                 if u.current_match is None:
                     still_unmatched_proposers = True
                     break
+            # print "(Number unmatched in DA sub-round: %d)" % len(unmatched_props),
 
         # add matches from this round to master matches list
         # remove this round's match from preference list
@@ -244,6 +244,17 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
             elif u.matches_obtained >= rec_max:
                 u.dropped_out = True
 
+        num_iters += 1
+
+        sat_prop = [u for u in propose if u.matches_obtained < prop_min]
+        sat_rec = [u for u in receive if u.matches_obtained < rec_min]
+        drop_prop = [u for u in propose if not u.dropped_out]
+        drop_rec = [u for u in receive if not u.dropped_out]
+        print "(%d propose not done, %d receive not done)" % (len(sat_prop), len(sat_rec)),
+        print "(%d propose avail. left, %d receive avail. left)" % (len(drop_prop), len(drop_rec)),
+        # if len(sat_rec) < 2:
+        #     print "(%s)" % sat_rec[-1].
+
     print "" # new line
     return matches
 
@@ -251,21 +262,21 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
 def run_iter_da_for_all():
 
     # random users...
-    # users = user.gen_users(1000)
-    # users = user.calc_prefs(users, save=False)
-    # users = user.filter_prefs(users)
+    users = user.gen_users(500)
+    users = user.calc_prefs(users, save=False)
+    users = user.filter_prefs(users)
 
     # or actual users...?
-    users = user.load_users('anon_data_2016.txt')
-    users = user.load_features(users, 'features_2016.txt')
-    users = user.load_prefs(users, 'preferences_2016.txt')
-    users = user.filter_prefs(users)
+    # users = user.load_users('anon_data_2016.txt')
+    # users = user.load_features(users, 'features_2016.txt')
+    # users = user.load_prefs(users, 'preferences_2016.txt')
+    # users = user.filter_prefs(users)
 
     users_dict = user.map_users_list_to_dict(users)
     all_users_ids = users_dict.keys()
 
     ########    PARAMETERS    ###############################
-    mixing_ratio = 0.5 # proportion of the matches that come from the different stages
+    mixing_ratio = 0.75 # proportion of the matches that come from the different stages
 
     overall_female_min = 10 # overall_female_min * mixing_ratio & overall_female_min * (1-mixing_ratio) are lower bounds on # matches for females in between groups algo
     overall_male_min = 1 # # overall_male_min * mixing_ratio & overall_male_min * (1-mixing_ratio) are lower bounds on # matches for males in between groups algo
@@ -276,6 +287,15 @@ def run_iter_da_for_all():
     dropout_male_factor = 18.0 # scalar multiple to set diff. btwn. male min & max # of matches in between groups algo
     dropout_within_group_factor = 1.5 # scalar multiple to set diff. btwn. min & max # of matches in within groups algo
     # (max # of matches <=> user dropping out in the algo)
+
+    overall_female_min = 4
+    overall_male_min = 4
+    overall_within_group_min = 5
+
+    dropout_female_factor = 3
+    dropout_male_factor = 3
+    dropout_within_group_factor = 5
+
 
     '''
     GROUPING
@@ -342,31 +362,25 @@ def run_iter_da_for_all():
     print "Computing matchings for homosexual & bisexual males..."
     min_target = (overall_within_group_min * mixing_ratio)
     matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for homosexual & bisexual females..."
     min_target = (overall_within_group_min * mixing_ratio)
     matches = iter_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for homosexual males..."
     min_target = (overall_within_group_min * (1.0 - mixing_ratio))
     matches = iter_da_within_group(homo_male, homo_m_id, min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for homosexual females..."
     min_target = (overall_within_group_min * (1.0 - mixing_ratio))
     matches = iter_da_within_group(homo_female, homo_f_id, min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for bisexual & heterosexual males & females..."
     min_target_female = (overall_female_min * (1.0 - mixing_ratio))
     min_target_male = (overall_male_min * (1.0 - mixing_ratio))
     #matches = iter_da_between_groups((heter_male + bi_male), (heter_m_id + bi_m_id), (heter_female + bi_female), (heter_f_id + bi_f_id), min_target_male, min_target_female, min_target_male * dropout_male_factor, min_target_female * dropout_female_factor, matches, all_users_ids)
     matches = iter_da_between_groups((heter_female + bi_female), (heter_f_id + bi_f_id), (heter_male + bi_male), (heter_m_id + bi_m_id), min_target_female, min_target_male, min_target_female * dropout_female_factor, min_target_male * dropout_male_factor, matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
     print "Computing matchings for heterosexual males & females..."
     min_target_female = (overall_female_min * (mixing_ratio))
     min_target_male = (overall_male_min * (mixing_ratio))
     #matches = iter_da_between_groups(heter_male, heter_m_id, heter_female, heter_f_id, min_target_male, min_target_female, min_target_male * dropout_male_factor, min_target_female * dropout_female_factor, matches, all_users_ids)
     matches = iter_da_between_groups(heter_female, heter_f_id, heter_male, heter_m_id, min_target_female, min_target_male, min_target_female * dropout_female_factor, min_target_male * dropout_male_factor, matches, all_users_ids)
-    user.analyze_num_matches(matches, users_dict)
 
     # create ranked list for each person by sorting their matches
     user.sort_all_match_lists(matches, users_dict)
