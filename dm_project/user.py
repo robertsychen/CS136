@@ -254,9 +254,9 @@ def analyze_rank_utility(matches, users_dict, k):
             if count >= k:
                 break
         utilities.append(np.mean(this_utility))
-    print colored('For all users:', 'cyan')
-    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(min(utilities)),
-        str(np.mean(utilities), str(max(utilities))))
+    print colored('For all users:', 'cyan'),
+    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(round(min(utilities), 6)),
+        str(round(np.mean(utilities), 6)), str(round(max(utilities), 6)))
 
     # compute only for heterosexual males (to compare differences between two sides proposing)
     utilities = []
@@ -272,9 +272,9 @@ def analyze_rank_utility(matches, users_dict, k):
             if count >= k:
                 break
         utilities.append(np.mean(this_utility))
-    print "And for heterosexual males only:"
-    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(min(utilities)),
-        str(np.mean(utilities), str(max(utilities))))
+    print colored("And for heterosexual males only:", 'cyan'),
+    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(round(min(utilities), 6)),
+        str(round(np.mean(utilities), 6)), str(round(max(utilities), 6)))
 
     # compute only for heterosexual females (to compare differences between two sides proposing)
     utilities = []
@@ -290,12 +290,13 @@ def analyze_rank_utility(matches, users_dict, k):
             if count >= k:
                 break
         utilities.append(np.mean(this_utility))
-    print "And for heterosexual females only:"
-    print "Min average rank: " + str(min(utilities))
-    print "Mean average rank: " + str(np.mean(utilities))
-    print "Max average rank: " + str(max(utilities))
+    print colored("And for heterosexual females only:", 'cyan')
+    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(round(min(utilities), 6)),
+        str(round(np.mean(utilities), 6)), str(round(max(utilities), 6)))
 
 def analyze_distance_utility(matches, users_dict, k):
+    print colored("Distance values:", 'cyan', attrs=['bold'])
+
     utilities = []
     for u_id in matches:
         this_utility = []
@@ -307,9 +308,9 @@ def analyze_distance_utility(matches, users_dict, k):
                 break
 
         utilities.append(np.mean(this_utility))
-    print "Min average distance: " + str(min(utilities))
-    print "Mean average distance: " + str(np.mean(utilities))
-    print "Max average distance: " + str(max(utilities))
+    print colored('For all users:', 'cyan'),
+    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(round(min(utilities), 6)),
+        str(round(np.mean(utilities), 6)), str(round(max(utilities), 6)))
 
     # compute only for heterosexual males (to compare differences between two sides proposing)
     utilities = []
@@ -324,10 +325,9 @@ def analyze_distance_utility(matches, users_dict, k):
             if count >= k:
                 break
         utilities.append(np.mean(this_utility))
-    print "And for heterosexual males only:"
-    print "Min average distance: " + str(min(utilities))
-    print "Mean average distance: " + str(np.mean(utilities))
-    print "Max average distance: " + str(max(utilities))
+    print colored("And for heterosexual males only:", 'cyan'),
+    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(round(min(utilities), 6)),
+        str(round(np.mean(utilities), 6)), str(round(max(utilities), 6)))
 
     # compute only for heterosexual females (to compare differences between two sides proposing)
     utilities = []
@@ -342,7 +342,6 @@ def analyze_distance_utility(matches, users_dict, k):
             if count >= k:
                 break
         utilities.append(np.mean(this_utility))
-    print "And for heterosexual females only:"
-    print "Min average distance: " + str(min(utilities))
-    print "Mean average distance: " + str(np.mean(utilities))
-    print "Max average distance: " + str(max(utilities))
+    print colored("And for heterosexual females only:", 'cyan'),
+    print "Min av.: %s, mean av.: %s, max av.: %s" % (str(round(min(utilities), 6)),
+        str(round(np.mean(utilities), 6)), str(round(max(utilities), 6)))

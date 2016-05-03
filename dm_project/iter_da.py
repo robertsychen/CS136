@@ -156,8 +156,9 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
         u.matches_obtained = 0
 
     need_more_matches = True
+    num_iters = 1
     while need_more_matches:
-        print "new iteration"
+        print "\rRunning iteration %d" % num_iters,
         # start new iteration of DA
         still_unmatched_proposers = True
         while (still_unmatched_proposers):
@@ -243,6 +244,7 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
             elif u.matches_obtained >= rec_max:
                 u.dropped_out = True
 
+    print "" # new line
     return matches
 
 # return matches on all users
@@ -250,7 +252,7 @@ def run_iter_da_for_all():
 
     # random users...
     # users = user.gen_users(1000)
-    # users = user.calc_prefs(users)
+    # users = user.calc_prefs(users, save=False)
     # users = user.filter_prefs(users)
 
     # or actual users...?
