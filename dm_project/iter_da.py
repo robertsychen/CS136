@@ -238,6 +238,7 @@ def run_iter_da_for_all():
     users = user.load_users('anon_data_2016.txt')
     users = user.load_features(users, 'features_2016.txt')
     users = user.load_prefs(users, 'preferences_2016.txt')
+    users = user.filter_prefs(users)
 
     users_dict = user.map_users_list_to_dict(users)
     all_users_ids = users_dict.keys()
@@ -332,29 +333,18 @@ def run_iter_da_for_all():
 
     # create ranked list for each person by sorting their matches
     user.sort_all_match_lists(matches, users_dict)
-    # check on how many matches people actually have
+    
     print colored("Matching completed!", 'red', 'on_green', attrs=['bold'])
+    
+    # check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
-
-    compatible_sizes = [
-        [
-            len(homo_male) + len(bi_male),
-            len(heter_female) + len(bi_female),
-            len(homo_male) + len(heter_female) + len(bi_male) + len(bi_female)
-        ],
-        [
-            len(homo_female) + len(bi_female),
-            len(heter_male) + len(bi_male),
-            len(homo_female) + len(heter_male) + len(bi_male) + len(bi_female)
-        ]
-    ]
 
     for i in range(1, 4, 1):
         print '\033[95m#####################################'
         print 'TOP %s MATCHES' % i
         print '#####################################\033[0m'
         #check the utility values from rank perspective and distance perspective -- in two separate functions
-        user.analyze_rank_utility(matches, users_dict, compatible_sizes, i)
+        user.analyze_rank_utility(matches, users_dict, i)
         user.analyze_distance_utility(matches, users_dict, i)
 
 run_iter_da_for_all()

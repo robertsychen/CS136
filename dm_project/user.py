@@ -7,6 +7,7 @@ from operator import itemgetter
 import numpy as np
 import re
 from termcolor import colored, cprint
+from collections import OrderedDict
 
 class User(object):
 
@@ -164,9 +165,9 @@ def load_prefs(users, filename):
             u_index -= 1
         prefs = map((int), id_and_prefs[1:])
         users[u_index].prefs = prefs
-        print "\rloaded preferences for user %d" % u_id,
+        print "\rLoaded preferences for user %d" % u_id,
     f.close()
-    print colored("Loaded all preferences!", 'green', attrs=['bold'])
+    print colored("\nLoaded all preferences!", 'green', attrs=['bold'])
     return users
 
 
@@ -177,6 +178,12 @@ def map_users_list_to_dict(users):
     for u in users:
         users_dict[u.id] = u
     return users_dict
+    
+def filter_prefs(users):
+    users_dict = map_users_list_to_dict(users)
+    for u in users:
+        u.prefs = filter(lambda x: u.is_compatibile(users_dict[x]), u.prefs)
+    return users
 
 # takes dictionary of matches (with key = id, value = unsorted list of matches)
 # and sorts all users' lists
@@ -206,37 +213,29 @@ def analyze_num_matches(matches, users_dict):
         u = users_dict[u_id]
         num_matches[u.seeking][u.gender].append(len(matches[u_id]))
 
+    def matches_str(seeking, gender):
+        return str(np.asarray(num_matches[seeking][gender]).mean()) + ", " + \
+            str({x: num_matches[seeking][gender].count(x) for x in set(num_matches[seeking][gender])})
+        
     # print out mean, freq list for all match groups
     print colored('Mean, freq list of matches:', 'green', attrs=['bold'])
-    print (colored("Homo males: ", 'cyan') + ", " +
-           str(np.asarray(num_matches[0][0]).mean()) + ", " +
-           str({x:num_matches[0][0].count(x) for x in num_matches[0][0]}))
-    print (colored("Homo females: ", 'cyan') + ", " +
-           str(np.asarray(num_matches[1][1]).mean()) + ", " +
-           str({x:num_matches[1][1].count(x) for x in num_matches[1][1]}))
-    print (colored("Bi males: ", 'cyan') + ", " +
-           str(np.asarray(num_matches[2][0]).mean()) + ", " +
-           str({x:num_matches[2][0].count(x) for x in num_matches[2][0]}))
-    print (colored("Bi females: ", 'cyan') + ", " +
-           str(np.asarray(num_matches[2][1]).mean()) + ", " +
-           str({x:num_matches[2][1].count(x) for x in num_matches[2][1]}))
-    print (colored("Hetero males: ", 'cyan') + ", " +
-           str(np.asarray(num_matches[1][0]).mean()) + ", " +
-           str({x:num_matches[1][0].count(x) for x in num_matches[1][0]}))
-    print (colored("Hetero females: ", 'cyan') + ", " +
-           str(np.asarray(num_matches[0][1]).mean()) + ", " +
-           str({x:num_matches[0][0].count(x) for x in num_matches[0][1]}))
+    print colored("Homo males: ", 'cyan') + matches_str(0, 0)
+    print colored("Homo females: ", 'cyan') + matches_str(1, 1)
+    print colored("Bi males: ", 'cyan') + matches_str(2, 0)
+    print colored("Bi females: ", 'cyan') + matches_str(2, 1)
+    print colored("Hetero males: ", 'cyan') + matches_str(1, 0)
+    print colored("Hetero females: ", 'cyan') + matches_str(0, 1)
 
     return num_matches
 
-def analyze_rank_utility(matches, users_dict, compatible_sizes, k):
+def analyze_rank_utility(matches, users_dict, k):
     utilities = []
     for u_id in matches:
-        u = users_dict[u_id]
+        prefs = users_dict[u_id].prefs
         this_utility = []
         count = 0
         for v_id in matches[u_id]:
-            this_utility.append((users_dict[u_id].prefs.index(v_id) + 1) / compatible_sizes[u.gender][u.seeking])
+            this_utility.append((prefs.index(v_id) + 1.0) / len(prefs))
             count += 1
             if count >= k:
                 break
@@ -250,10 +249,11 @@ def analyze_rank_utility(matches, users_dict, compatible_sizes, k):
     for u_id in matches:
         if (users_dict[u_id].gender != 0) or (users_dict[u_id].seeking != 1):
             continue
+        prefs = users_dict[u_id].prefs
         this_utility = []
         count = 0
         for v_id in matches[u_id]:
-            this_utility.append((users_dict[u_id].prefs.index(v_id) + 1) / compatible_sizes[u.gender][u.seeking])
+            this_utility.append((prefs.index(v_id) + 1.0) / len(prefs))
             count += 1
             if count >= k:
                 break
@@ -268,10 +268,11 @@ def analyze_rank_utility(matches, users_dict, compatible_sizes, k):
     for u_id in matches:
         if (users_dict[u_id].gender != 1) or (users_dict[u_id].seeking != 0):
             continue
+        prefs = users_dict[u_id].prefs
         this_utility = []
         count = 0
         for v_id in matches[u_id]:
-            this_utility.append((users_dict[u_id].prefs.index(v_id) + 1) / compatible_sizes[u.gender][u.seeking])
+            this_utility.append((prefs.index(v_id) + 1.0) / len(prefs))
             count += 1
             if count >= k:
                 break

@@ -6,6 +6,7 @@ import copy
 import math
 import bisect
 import random
+from termcolor import colored, cprint
 
 def mtm_da_within_group(people, people_ids, target_min, matches, all_users_ids):
     #precompute whether each user is within this group of people
@@ -192,6 +193,7 @@ def run_mtm_da_for_all():
     users = user.load_features(users, 'features_2016.txt')
     # users = user.calc_prefs(users)
     users = user.load_prefs(users, 'preferences_2016.txt')
+    users = user.filter_prefs(users)
 
     users_dict = user.map_users_list_to_dict(users)
     all_users_ids = users_dict.keys()
@@ -261,52 +263,41 @@ def run_mtm_da_for_all():
 
 
     #call the iterated DA functions in 6 stages
-    print "Computing matchings for homosexual & bisexual males..."
+    print colored("Computing matchings for homosexual & bisexual males...", 'magenta', attrs=['bold'])
     matches = mtm_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), int(overall_target_min * mixing_ratio), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for homosexual & bisexual females..."
+    print colored("Computing matchings for homosexual & bisexual females...", 'magenta', attrs=['bold'])
     matches = mtm_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), int(overall_target_min * mixing_ratio), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for homosexual males..."
+    print colored("Computing matchings for homosexual males...", 'magenta', attrs=['bold'])
     matches = mtm_da_within_group(homo_male, homo_m_id, int(overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for homosexual females..."
+    print colored("Computing matchings for homosexual females...", 'magenta', attrs=['bold'])
     matches = mtm_da_within_group(homo_female, homo_f_id, int(overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for bisexual & heterosexual males & females..."
+    print colored("Computing matchings for bisexual & heterosexual males & females...", 'magenta', attrs=['bold'])
     matches = mtm_da_between_groups((heter_male + bi_male), (heter_m_id + bi_m_id), (heter_female + bi_female), (heter_f_id + bi_f_id), int(overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     # matches = mtm_da_between_groups((heter_female + bi_female), (heter_f_id + bi_f_id), (heter_male + bi_male), (heter_m_id + bi_m_id), int(overall_target_min * (1.0 - mixing_ratio)), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
-    print "Computing matchings for heterosexual males & females..."
+    print colored("Computing matchings for heterosexual males & females...", 'magenta', attrs=['bold'])
     matches = mtm_da_between_groups(heter_male, heter_m_id, heter_female, heter_f_id, int(overall_target_min * mixing_ratio), matches, all_users_ids)
     # matches = mtm_da_between_groups(heter_female, heter_f_id, heter_male, heter_m_id, int(overall_target_min * mixing_ratio), matches, all_users_ids)
     user.analyze_num_matches(matches, users_dict)
 
     #create ranked list for each person by sorting their matches
     user.sort_all_match_lists(matches, users_dict)
+    
+    print colored("Matching completed!", 'red', 'on_green', attrs=['bold'])
 
     #check on how many matches people actually have
     user.analyze_num_matches(matches, users_dict)
-    
-    compatible_sizes = [
-        [
-            len(homo_male) + len(bi_male),
-            len(heter_female) + len(bi_female),
-            len(homo_male) + len(heter_female) + len(bi_male) + len(bi_female)
-        ],
-        [
-            len(homo_female) + len(bi_female),
-            len(heter_male) + len(bi_male),
-            len(homo_female) + len(heter_male) + len(bi_male) + len(bi_female)
-        ]
-    ]
 
     for i in range(1, 4, 1):
-        print '#####################################'
+        print '\033[95m#####################################'
         print 'TOP %s MATCHES' % i
-        print '#####################################'
+        print '#####################################\033[0m'
         #check the utility values from rank perspective and distance perspective -- in two separate functions
-        user.analyze_rank_utility(matches, users_dict, compatible_sizes, i)
+        user.analyze_rank_utility(matches, users_dict, i)
         user.analyze_distance_utility(matches, users_dict, i)
 
 run_mtm_da_for_all()
