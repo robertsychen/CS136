@@ -235,7 +235,7 @@ def analyze_num_matches(matches, users_dict):
     print colored("Hetero females: ", 'cyan') + matches_str(0, 1)
     print colored("All males: ", 'cyan') + matches_str([0, 1, 2], 0)
     print colored("All females: ", 'cyan') + matches_str([0, 1, 2], 1)
-    print colored("All people: ", 'cyan') + matches_str([0, 1, 2], 1)
+    print colored("All people: ", 'cyan') + matches_str([0, 1, 2], [0, 1])
 
     return num_matches
 

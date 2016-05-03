@@ -58,7 +58,7 @@ def iter_da_within_group(people, people_ids, people_min, people_max, matches, al
                             break
                         u.prop_pos += 1
 
-                        if (not dropped_out[target_id] and target_id not in matches[u.id]):
+                        if (not dropped_out[target_id]):
                             # found a valid target id
                             break
 
@@ -190,7 +190,7 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
                             break
                         u.prop_pos += 1
 
-                        if (not receive_dict[target_id].dropped_out and target_id not in matches[u.id]):
+                        if (not receive_dict[target_id].dropped_out):
                             # found a valid target id
                             break
 
@@ -263,7 +263,7 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, prop_mi
         sat_rec = [u for u in receive if u.matches_obtained < rec_min]
         drop_prop = [u for u in propose if not u.dropped_out]
         drop_rec = [u for u in receive if not u.dropped_out]
-        print "(%d propose not done, %d receive not done)" % (len(sat_prop), len(sat_rec)),
+        print "\r(%d propose not done, %d receive not done)" % (len(sat_prop), len(sat_rec)),
         print "(%d propose avail. left, %d receive avail. left)" % (len(drop_prop), len(drop_rec)),
 
     print "" # new line
@@ -290,11 +290,11 @@ def run_iter_da_for_all():
     mixing_ratio = 0.6 # proportion of the matches that come from the different stages
 
     overall_female_min = 10 # overall_female_min * mixing_ratio & overall_female_min * (1-mixing_ratio) are lower bounds on # matches for females in between groups algo
-    overall_male_min = 1 # # overall_male_min * mixing_ratio & overall_male_min * (1-mixing_ratio) are lower bounds on # matches for males in between groups algo
+    overall_male_min = 1 # overall_male_min * mixing_ratio & overall_male_min * (1-mixing_ratio) are lower bounds on # matches for males in between groups algo
     overall_within_group_min = 10 # overall_within_group_min * mixing_ratio & overall_within_group_min * (1-mixing_ratio) are lower bounds on # matches for within group algo
     # (These approximately translate to lower bounds on # matches overall)
 
-    dropout_female_factor = 1.2 # scalar multiple to set diff. btwn. female min & max # of matches in between groups algo
+    dropout_female_factor = 1.4 # scalar multiple to set diff. btwn. female min & max # of matches in between groups algo
     dropout_male_factor = 18.0 # scalar multiple to set diff. btwn. male min & max # of matches in between groups algo
     dropout_within_group_factor = 1.5 # scalar multiple to set diff. btwn. min & max # of matches in within groups algo
     # (max # of matches <=> user dropping out in the algo)
@@ -370,18 +370,18 @@ def run_iter_da_for_all():
     ITERATED DA
     Find matches in 6 stages
     '''
-    # print "Computing matchings for homosexual & bisexual males..."
-    # min_target = (overall_within_group_min * mixing_ratio)
-    # matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
-    # print "Computing matchings for homosexual & bisexual females..."
-    # min_target = (overall_within_group_min * mixing_ratio)
-    # matches = iter_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
-    # print "Computing matchings for homosexual males..."
-    # min_target = (overall_within_group_min * (1.0 - mixing_ratio))
-    # matches = iter_da_within_group(homo_male, homo_m_id, min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
-    # print "Computing matchings for homosexual females..."
-    # min_target = (overall_within_group_min * (1.0 - mixing_ratio))
-    # matches = iter_da_within_group(homo_female, homo_f_id, min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
+    print "Computing matchings for homosexual & bisexual males..."
+    min_target = (overall_within_group_min * mixing_ratio)
+    matches = iter_da_within_group((homo_male + bi_male), (homo_m_id + bi_m_id), min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
+    print "Computing matchings for homosexual & bisexual females..."
+    min_target = (overall_within_group_min * mixing_ratio)
+    matches = iter_da_within_group((homo_female + bi_female), (homo_f_id + bi_f_id), min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
+    print "Computing matchings for homosexual males..."
+    min_target = (overall_within_group_min * (1.0 - mixing_ratio))
+    matches = iter_da_within_group(homo_male, homo_m_id, min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
+    print "Computing matchings for homosexual females..."
+    min_target = (overall_within_group_min * (1.0 - mixing_ratio))
+    matches = iter_da_within_group(homo_female, homo_f_id, min_target, min_target*dropout_within_group_factor, matches, all_users_ids)
     print "Computing matchings for bisexual & heterosexual males & females..."
     min_target_female = (overall_female_min * (1.0 - mixing_ratio))
     min_target_male = (overall_male_min * (1.0 - mixing_ratio))
