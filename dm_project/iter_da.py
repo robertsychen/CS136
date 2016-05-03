@@ -226,7 +226,12 @@ def iter_da_between_groups(proposer, propose_ids, receiver, receive_ids, target_
             else:
                 u.dropped_out = True
 
-    print colored("Finished matching stage!", "green", atts=["bold"])
+        large_still_need_matches = [u for u in larger if not u.dropped_out]
+        small_still_need_matches = [u for u in smaller if not u.dropped_out]
+        print "(large left: %d, small left: %d)" % (len(large_still_need_matches),
+            len(small_still_need_matches)),
+
+    print colored("Finished matching stage!", "green", attrs=["bold"])
     return matches
 
 # return matches on all users

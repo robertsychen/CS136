@@ -83,7 +83,7 @@ def calc_prefs(users, save=True, compatible_only=False):
         distances_and_ids.sort(key=itemgetter(1))
         # print distances_and_ids
         u1.prefs = [u[0] for u in distances_and_ids]
-        print 'Loaded prefs for user %d: %s ....' % (u1.id, u1.prefs[0:5])
+        print '\rCalculated prefs for user %d: %s ....' % (u1.id, u1.prefs[0:5]),
     print colored("Calculated all preferences!", 'green', attrs=['bold'])
     if save:
         outfile = raw_input("Filename to save to prefs to?:")
@@ -333,5 +333,3 @@ def analyze_distance_utility(matches, users_dict, k):
     print "Min average distance: " + str(min(utilities))
     print "Mean average distance: " + str(np.mean(utilities))
     print "Max average distance: " + str(max(utilities))
-
-# could add utility for just the top match instead of average over all matches
